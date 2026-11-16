@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0E1A44">
+<title>Certificado de Autenticidade · Bruno Lorenz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root{--tinta:#0E1A44;--noite:#081030;--cobalto:#2B50FF;--luz:#FFD46B;--lavado:#B9C8FA;--papel:#F6F8FD;--cinza:#56618A;
+  --disp:"Bricolage Grotesque","DM Sans",system-ui,sans-serif;--txt:"DM Sans",system-ui,sans-serif}
+*{box-sizing:border-box}
+html{background:#081030}
+html,body{margin:0;min-height:100%}
+body{background:radial-gradient(120% 90% at 50% 0%,#1B2C70 0%,var(--tinta) 45%,var(--noite) 100%) fixed;color:#fff;font:16px/1.45 var(--txt);-webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100svh}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--luz);outline-offset:4px}
+#ceu{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+#raios{position:fixed;left:50%;top:46%;width:180vmax;height:180vmax;margin:-90vmax;z-index:0;pointer-events:none;opacity:0;transition:opacity 2s;
+  background:conic-gradient(from 0deg,transparent 0 8deg,#ffd46b14 12deg,transparent 18deg 50deg,#b9c8fa12 56deg,transparent 64deg 118deg,#ffd46b10 124deg,transparent 132deg 190deg,#b9c8fa14 197deg,transparent 205deg 260deg,#ffd46b12 266deg,transparent 274deg 320deg,#b9c8fa10 327deg,transparent 336deg);
+  -webkit-mask-image:radial-gradient(closest-side,#000 0,transparent 72%);mask-image:radial-gradient(closest-side,#000 0,transparent 72%);animation:gira 90s linear infinite}
+body.aberto #raios{opacity:1}
+@keyframes gira{to{transform:rotate(360deg)}}
+.marca{font:800 20px/1 var(--disp);letter-spacing:-.04em;margin:0}.marca i{font-style:normal;color:var(--luz)}
+#som{position:absolute;right:14px;top:14px;z-index:6;font:600 13px var(--disp);color:var(--lavado);padding:8px 10px}
+/* ---------- abertura: uma carta lacrada ---------- */
+#intro{position:relative;z-index:2;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(22px,4.5vh,48px);padding:28px;text-align:center}
+#intro h1{font:800 clamp(36px,8vw,96px)/.92 var(--disp);font-stretch:78%;letter-spacing:-.04em;margin:0;max-width:13ch;animation:sobe 1.1s .15s cubic-bezier(.16,1,.3,1) both;transition:opacity .35s}
+#intro .marca{animation:sobe 1s cubic-bezier(.16,1,.3,1) both;transition:opacity .35s}
+#intro>em{font:600 16px var(--disp);font-style:normal;color:var(--lavado);animation:sobe 1.1s .7s cubic-bezier(.16,1,.3,1) both;transition:opacity .35s;min-height:1.4em}
+#abrir{display:block;width:min(78vw,380px);aspect-ratio:1.5;position:relative;perspective:1000px;animation:sobe 1.2s .45s cubic-bezier(.16,1,.3,1) both,flutua 5s 1.8s ease-in-out infinite;filter:drop-shadow(0 30px 40px #0009)}
+#abrir[disabled]{cursor:default;opacity:.55}
+@keyframes flutua{50%{translate:0 -10px;rotate:-1.2deg}}
+.e-fundo,.e-bolso,.e-aba,.e-carta{position:absolute;inset:0}
+.e-fundo{background:#DDE4F6}
+.e-carta{inset:6% 7% 10%;background:#fff;box-shadow:0 0 0 1px #cbd5ee;transition:transform .9s .55s cubic-bezier(.3,1.3,.4,1);background-image:linear-gradient(105deg,#2B50FF,#7FD6FF,#FFD46B,#FF8BD1);background-size:100% 7%;background-repeat:no-repeat}
+.e-carta::after{content:"";position:absolute;left:10%;right:10%;top:22%;height:42%;background:repeating-linear-gradient(#0e1a4433 0 3px,transparent 3px 18px)}
+.e-bolso{background:var(--papel);clip-path:polygon(0 0,50% 58%,100% 0,100% 100%,0 100%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:9%;color:var(--tinta)}
+.e-bolso span{font:italic 400 clamp(15px,4.4vw,22px) var(--txt);max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.e-bolso::before{content:"";position:absolute;inset:0;background:linear-gradient(to top,#0e1a4412,transparent 60%)}
+.e-aba{background:linear-gradient(#EEF2FB,#E3E9F8);clip-path:polygon(0 0,100% 0,50% 60%);transform-origin:50% 0;transition:transform .7s .12s cubic-bezier(.6,0,.3,1);backface-visibility:visible}
+.e-lacre{position:absolute;left:50%;top:57%;width:23%;aspect-ratio:1;margin:-11.5% 0 0 -11.5%;border-radius:50%;display:grid;place-items:center;font:800 clamp(11px,3.2vw,15px) var(--disp);color:#5a3a05;
+  background:radial-gradient(circle at 35% 30%,#fff3c4,#FFD46B 45%,#e09a25 100%);box-shadow:0 0 0 3px #ffd46b55,0 6px 14px #0007,inset 0 -3px 6px #b8751a88,0 0 50px 8px #ffd46b77;animation:lacre 2.2s ease-in-out infinite;transition:transform .3s,opacity .3s}
+@keyframes lacre{50%{box-shadow:0 0 0 12px #ffd46b00,0 6px 14px #0007,inset 0 -3px 6px #b8751a88,0 0 80px 22px #ffd46baa;scale:1.06}}
+@keyframes sobe{from{opacity:0;transform:translateY(28px)}}
+body.abrindo #intro h1,body.abrindo #intro .marca,body.abrindo #intro>em{opacity:0}
+body.abrindo #abrir{animation:none}
+body.abrindo .e-lacre{transform:scale(0) rotate(90deg);opacity:0;animation:none}
+body.abrindo .e-aba{transform:rotateX(180deg);z-index:0}
+body.abrindo .e-carta{transform:translateY(-62%)}
+body.abrindo #abrir{transition:transform .7s 1.15s cubic-bezier(.6,0,.8,.4),opacity .5s 1.3s;transform:scale(1.5) translateY(8%);opacity:0}
+#clarao{position:fixed;inset:0;background:#fff8dd;z-index:5;opacity:0;pointer-events:none}
+body.abrindo #clarao{animation:clarao 1.5s 1.15s both}
+@keyframes clarao{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+/* ---------- palco ---------- */
+#palco{position:relative;z-index:2;min-height:100svh;display:flex;flex-direction:column;align-items:center;padding:clamp(18px,3vh,36px) 16px 70px}
+#palco[hidden],#intro[hidden]{display:none}
+#palco>.marca{align-self:flex-start;margin:0 0 clamp(14px,3vh,30px) clamp(0px,2vw,24px);opacity:.9}
+.persp{perspective:1500px;width:100%;display:flex;justify-content:center;touch-action:pan-y}
+.entrada{transform-style:preserve-3d;animation:entra 1.7s .1s cubic-bezier(.16,1,.3,1) both}
+@keyframes entra{0%{transform:translateY(60vh) rotateX(55deg) rotateY(-210deg) scale(.25);opacity:0}25%{opacity:1}100%{transform:none}}
+.card{--rx:0deg;--ry:0deg;--mx:50%;--my:30%;--h:50%;--sx:0px;--sy:30px;position:relative;width:min(94vw,1000px);display:grid;transform-style:preserve-3d;transform:rotateX(var(--rx)) rotateY(var(--ry));will-change:transform;cursor:pointer;container-type:inline-size}
+.face{grid-area:1/1;position:relative;min-height:70.7cqw;background:var(--papel);color:var(--tinta);padding:5.4cqw 5.6cqw 4.6cqw;display:flex;flex-direction:column;transform-style:preserve-3d;
+  box-shadow:0 1px 0 #d4dbee,0 2px 0 #c9d1e8,0 3px 0 #bec7e2,var(--sx) var(--sy) 70px -10px #000a,0 0 120px -20px #ffd46b55}
+.face::before{content:"";position:absolute;inset:1.6cqw;border:.16cqw solid var(--tinta);pointer-events:none}
+.face::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(60% 70% at var(--mx) var(--my),#ffffffd9 0,#ffffff00 60%),linear-gradient(calc(110deg + var(--ry)*2),#0e1a4400 35%,#0e1a441f 100%)}
+.verso{transform:rotateY(180deg)}
+.card:not(.virado) .verso,.card.virado .frente{visibility:hidden}
+.varre{position:absolute;inset:0;overflow:hidden;pointer-events:none;transform:translateZ(1px)}
+.varre i{position:absolute;top:-20%;bottom:-20%;width:34%;left:-60%;transform:skewX(-18deg);background:linear-gradient(90deg,#fff0,#ffffffe6 45%,#fff3c4 55%,#fff0)}
+.pronto .varre i{animation:varre 1.3s 1.65s cubic-bezier(.4,0,.2,1) both}
+@keyframes varre{to{left:130%}}
+.foil{background:linear-gradient(105deg,#0E1A44 0%,#0E1A44 22%,#2B50FF 34%,#7FD6FF 43%,#FFD46B 50%,#FF8BD1 57%,#2B50FF 66%,#0E1A44 78%,#0E1A44 100%);background-size:320% 100%;background-position:var(--h) 0;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.faixa{position:absolute;left:1.6cqw;right:1.6cqw;top:1.6cqw;height:.9cqw;background:linear-gradient(105deg,#2B50FF,#7FD6FF,#FFD46B,#FF8BD1,#2B50FF,#7FD6FF,#FFD46B);background-size:300% 100%;background-position:var(--h) 0}
+.rot{font-size:max(9px,1.25cqw);color:var(--cinza);margin:0 0 .3cqw;letter-spacing:.01em}
+.topo{display:flex;justify-content:space-between;align-items:flex-start;gap:3cqw;transform:translateZ(34px)}
+.topo h2{font:800 5.6cqw/.95 var(--disp);font-stretch:80%;letter-spacing:-.035em;margin:0}
+.topo small{display:block;font:500 2.1cqw var(--disp);margin-top:.7cqw;-webkit-text-fill-color:var(--cinza)}
+.num{text-align:right;white-space:nowrap}.num b{font:700 2.4cqw var(--disp);display:block}
+.regua{height:.14cqw;background:var(--tinta);margin:2.4cqw 0 2.6cqw}
+.corpo{display:grid;grid-template-columns:1.55fr 1fr;gap:4cqw;flex:1;transform-style:preserve-3d}
+.tit{display:flex;gap:2.4cqw;align-items:center;margin-bottom:2.4cqw;transform:translateZ(22px)}
+.tit h3{font:800 4.2cqw/1 var(--disp);font-stretch:82%;letter-spacing:-.03em;margin:0}
+.mini{flex:none;width:9cqw;height:9cqw;object-fit:cover;background:#fff;padding:.5cqw;box-shadow:0 .8cqw 1.6cqw -.6cqw #0e1a4488,inset 0 0 0 .12cqw #cbd5ee;rotate:-3deg}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:1.6cqw 3cqw}
+.meta b,.txt{font:600 max(11px,1.9cqw)/1.2 var(--disp)}
+.meta .larga{grid-column:1/-1}
+.lado{display:flex;flex-direction:column;gap:3cqw;align-items:flex-end;transform-style:preserve-3d}
+.quem{background:#E7ECF9;padding:3cqw;align-self:stretch;transform:translateZ(46px);box-shadow:0 1.2cqw 2.6cqw -1.4cqw #0e1a4466}
+.quem h4{font:800 3.2cqw/1.02 var(--disp);font-stretch:82%;letter-spacing:-.03em;margin:0;overflow-wrap:anywhere}
+.selo{position:relative;flex:none;width:15cqw;height:15cqw;transform:translateZ(80px);filter:drop-shadow(0 1cqw 1.2cqw #0e1a4455)}
+.selo .disco{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from calc(var(--ry)*9),#FFD46B,#fff6cf,#f0a93b,#FFD46B,#ffe9a6,#e79a2d,#FFD46B);box-shadow:inset 0 0 0 .5cqw #ffffff66,inset 0 0 0 .7cqw #c9861f55}
+.selo svg{position:absolute;inset:0;width:100%;height:100%;animation:gira 40s linear infinite}
+.selo text{font:700 8.6px var(--disp);fill:var(--tinta);letter-spacing:1.3px}
+.selo .meio{position:absolute;inset:0;display:grid;place-items:center;font:800 3.6cqw var(--disp);font-stretch:78%;color:var(--tinta);letter-spacing:-.03em}
+.pe{display:flex;justify-content:space-between;align-items:flex-end;gap:3cqw;margin-top:3cqw;transform:translateZ(18px)}
+.pe .txt{font-size:max(11px,2.1cqw)}
+.ass img{display:block;height:7.4cqw;max-width:30cqw;object-fit:contain;object-position:left bottom;margin-bottom:-.6cqw}
+.ass .linha{width:30cqw;height:.14cqw;background:var(--tinta);margin-bottom:.8cqw}
+.ass b{font:700 2.3cqw var(--disp)}
+/* verso */
+.verso .corpo{grid-template-columns:1fr}
+.verso.foto .corpo{grid-template-columns:auto 1fr;align-items:start}
+.moldura{width:24cqw;background:#fff;padding:1.2cqw;box-shadow:0 1.6cqw 3cqw -1.2cqw #0e1a4488,inset 0 0 0 .14cqw #cbd5ee;transform:translateZ(54px) rotate(-2deg)}
+.moldura img{display:block;width:100%}
+.textos{display:grid;gap:2.6cqw;align-content:start}
+.nota{font-size:max(11px,1.75cqw);line-height:1.45;margin:0}
+.ded{font:italic 400 max(12px,2.4cqw)/1.35 var(--txt);margin:0;transform:translateZ(26px)}
+.cert{font-size:max(10px,1.6cqw);margin:0}.cert span{display:block;color:var(--cinza)}
+/* revelação */
+.frente [data-r]{opacity:0}
+.pronto .frente [data-r]{animation:revela .9s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(1.4s + var(--i)*.11s)}
+@keyframes revela{from{opacity:0;filter:blur(8px);translate:0 14px}to{opacity:1;filter:none;translate:0 0}}
+.frente .selo{opacity:0}
+.pronto .frente .selo{animation:carimbo .7s 2.75s cubic-bezier(.2,1.6,.3,1) both}
+@keyframes carimbo{0%{opacity:0;scale:2.8;rotate:-28deg}60%{opacity:1}100%{opacity:1;scale:1;rotate:0deg}}
+/* retrato (celular): tudo em fluxo, nada sobreposto */
+@media(max-width:700px){
+  .card{width:min(92vw,460px)}
+  .face{min-height:128cqw;padding:9cqw 8cqw 7.5cqw}.face::before{inset:2.6cqw}.faixa{left:2.6cqw;right:2.6cqw;top:2.6cqw;height:1.6cqw}
+  .rot{font-size:2.9cqw;margin-bottom:.6cqw}.topo{flex-direction:column;gap:2cqw}.topo h2{font-size:10.4cqw}.topo small{font-size:4cqw}
+  .num{text-align:left}.num b{font-size:4.2cqw;display:inline;margin-left:1.5cqw}.num .rot{display:inline}
+  .regua{margin:4cqw 0 5cqw;height:.3cqw}.corpo,.verso.foto .corpo{grid-template-columns:1fr;gap:6cqw}
+  .tit{gap:4cqw;margin-bottom:5cqw}.tit h3{font-size:8.4cqw}.mini{width:19cqw;height:19cqw;padding:1cqw}
+  .meta{gap:3.6cqw 4cqw}.meta b,.txt{font-size:3.8cqw}
+  .lado{flex-direction:row;align-items:center;gap:5cqw}.quem{padding:4.5cqw 5cqw;flex:1;align-self:center}.quem h4{font-size:6cqw}
+  .selo{width:25cqw;height:25cqw}.selo .meio{font-size:6.2cqw}
+  .pe{flex-direction:column;align-items:flex-start;gap:4cqw;margin-top:6cqw}.pe .txt{font-size:3.9cqw}.pe>div{text-align:left!important}
+  .ass img{height:15cqw;max-width:56cqw}.ass .linha{width:56cqw;height:.3cqw}.ass b{font-size:4.6cqw}
+  .moldura{width:46cqw;padding:2cqw;justify-self:center}.textos{gap:5cqw}
+  .nota{font-size:3.5cqw}.ded{font-size:4.9cqw}.cert{font-size:3.2cqw}
+}
+/* ações e fim */
+.acoes{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:clamp(28px,5vh,56px);animation:sobe 1s 3.4s both}
+.bt{display:inline-block;padding:13px 22px;font:600 15px var(--disp);background:var(--luz);color:var(--tinta);text-decoration:none;transition:transform .2s,box-shadow .2s}
+.bt:hover{transform:translateY(-3px);box-shadow:0 10px 30px -8px #ffd46b99}
+.bt.q{background:none;color:#fff;box-shadow:inset 0 0 0 1.5px #ffffff88}.bt.q:hover{box-shadow:inset 0 0 0 1.5px #fff,0 10px 30px -10px #fff6}
+.fim{max-width:46ch;text-align:center;margin:clamp(34px,7vh,80px) auto 0;color:var(--lavado);animation:sobe 1s 3.7s both}
+.fim b{display:block;font:800 clamp(26px,4.4vw,46px)/1 var(--disp);font-stretch:80%;letter-spacing:-.03em;color:#fff;margin-bottom:12px}
+.fim .bt{margin-top:18px}
+.fim small{display:block;margin-top:34px;opacity:.7}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-delay:0s!important;transition:none!important}#raios,#abrir{animation:none}}
+</style>
+</head>
+<body>
+<canvas id="ceu"></canvas>
+<div id="raios"></div>
+<div id="clarao"></div>
+<button id="som" aria-pressed="true">Som ligado</button>
+
+<section id="intro">
+  <p class="marca">uns predinhos<i>.</i></p>
+  <h1 id="ola">Chegou uma carta para você.</h1>
+  <button id="abrir" aria-label="Abrir a carta com o certificado" disabled>
+    <span class="e-fundo"></span><span class="e-carta"></span><span class="e-bolso"><span id="para"></span></span><span class="e-aba"></span><span class="e-lacre">abrir</span>
+  </button>
+  <em id="dica">Buscando o seu certificado…</em>
+</section>
+
+<main id="palco" hidden>
+  <p class="marca">uns predinhos<i>.</i></p>
+  <div class="persp"><div class="entrada"><div class="card" id="card" role="button" tabindex="0" aria-label="Certificado de autenticidade. Toque para virar.">
+    <div class="face frente" id="frente"></div>
+    <div class="face verso" id="verso"></div>
+  </div></div></div>
+  <div class="acoes"><button class="bt" id="virar">Virar o certificado</button><button class="bt q" id="salvar">Salvar como imagem</button><button class="bt q" id="comp" hidden>Compartilhar</button></div>
+  <div class="fim"><b>Feita à mão, uma só.</b>Este é o certificado digital da sua obra. A versão em papel, assinada à mão por Bruno Lorenz, vai junto com a encomenda.</div>
+  <div class="fim" style="animation-delay:3.9s"><b>Gostou?</b>Uma avaliação no Google ajuda muito o meu trabalho a chegar em mais gente.<br><a class="bt" href="https://maps.app.goo.gl/3RoijqVQFpA5TdMR9" target="_blank" rel="noopener">Avaliar no Google</a><small>@unspredinhos</small></div>
+</main>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const MESL=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const imgOk=u=>/^(https:\/\/|data:image\/(jpeg|png|webp);base64,)/.test(u||'');
+let d=null,dataTxt='',sigImg=null,fotoImg=null;
+/* ---------- dados: o link traz um código secreto (ou, em links antigos, os próprios dados) ---------- */
+const EXEMPLO={titulo:'Sobrado da Rua da Praia',tecnica:'Aquarela e nanquim sobre papel',dim:'21 × 29,7 cm',ano:'2026',local:'Porto Alegre, Brasil',materiais:'Papel 100% algodão 300 g/m²',nota:'Este é um certificado de exemplo, para você ver como a página funciona.',comprador:'Nome de quem encomendou',dedic:'Uma dedicatória escrita à mão cabe aqui.',data:new Date().toISOString().slice(0,10),num:'UNS_000/2026'};
+async function busca(){const h=location.hash.slice(1);if(!h)return {d:EXEMPLO,ex:true};
+  const q=new URLSearchParams(h),t=q.get('t'),s=q.get('s');
+  if(t&&s&&/^[\w-]+$/.test(s)){const r=await fetch('https://script.google.com/macros/s/'+s+'/exec?cert='+encodeURIComponent(t));const j=await r.json();if(!j.cert)throw new Error(j.erro||'Certificado não encontrado');return {d:j.cert}}
+  const b=atob(h.replace(/-/g,'+').replace(/_/g,'/'));return {d:JSON.parse(new TextDecoder().decode(Uint8Array.from(b,c=>c.charCodeAt(0))))}}
+function carrega(src){return new Promise(r=>{if(!imgOk(src))return r(null);const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src})}
+/* ---------- monta o cartão ---------- */
+function monta(){let ri=0;const r=()=>`data-r style="--i:${ri++}"`;
+  dataTxt=/^\d{4}-\d\d-\d\d$/.test(d.data||'')?+d.data.slice(8)+' de '+MESL[+d.data.slice(5,7)-1].toLowerCase()+' de '+d.data.slice(0,4):(d.data||'');
+  const campo=(pt,en,v,larga)=>v?`<div class="${larga?'larga':''}" ${r()}><p class="rot">${pt} · ${en}</p><b>${esc(v)}</b></div>`:'';
+  const selo=`<div class="selo" aria-hidden="true"><div class="disco"></div><svg viewBox="0 0 100 100"><defs><path id="arco" d="M50 50 m-39 0 a39 39 0 1 1 78 0 a39 39 0 1 1 -78 0"/></defs><text><textPath href="#arco">OBRA ORIGINAL · FEITA À MÃO · PEÇA ÚNICA · </textPath></text></svg><div class="meio">${esc(d.ano||'')}</div></div>`;
+  const foto=imgOk(d.foto);
+  document.title='Certificado de Autenticidade'+(d.titulo?' · '+d.titulo:'')+' · Bruno Lorenz';
+  $('#frente').innerHTML=`<div class="faixa"></div>
+    <div class="topo"><div ${r()}><h2 class="foil">Certificado de Autenticidade<small>Certificate of Authenticity</small></h2></div><div class="num" ${r()}><p class="rot">Nº · No.</p><b>${esc(d.num)}</b></div></div>
+    <div class="regua" ${r()}></div>
+    <div class="corpo"><div class="obra"><p class="rot" ${r()}>Título da obra · Title</p><div class="tit" ${r()}>${foto?`<img class="mini" src="${esc(d.foto)}" alt="Foto da obra">`:''}<h3>${esc(d.titulo||'Sem título')}</h3></div>
+        <div class="meta">${campo('Técnica','Medium',d.tecnica)}${campo('Dimensões','Dimensions',d.dim)}${campo('Ano','Year',d.ano)}${campo('Local de criação','Place of creation',d.local)}${campo('Materiais','Materials',d.materiais,1)}</div></div>
+      <div class="lado">${d.comprador?`<div class="quem" ${r()}><p class="rot">Adquirida por · Acquired by</p><h4>${esc(d.comprador)}</h4></div>`:''}${selo}</div></div>
+    <div class="pe"><div ${r()}><p class="rot">Data de emissão · Date of issue</p><span class="txt">${esc(dataTxt)}</span></div></div>
+    <div class="varre"><i></i></div>`;
+  $('#verso').className='face verso'+(foto?' foto':'');
+  $('#verso').innerHTML=`<div class="faixa"></div>
+    <div class="topo"><div><h2 class="foil" style="font-size:max(18px,3.4cqw)">${esc(d.titulo||'Certificado de Autenticidade')}</h2></div><div class="num"><p class="rot">Nº · No.</p><b>${esc(d.num)}</b></div></div>
+    <div class="regua"></div>
+    <div class="corpo">${foto?`<div class="moldura"><img src="${esc(d.foto)}" alt="Foto da obra"></div>`:''}
+      <div class="textos">${d.dedic?`<div><p class="rot">Dedicatória · Dedication</p><p class="ded">${esc(d.dedic)}</p></div>`:''}
+        ${d.nota?`<div><p class="rot">Nota sobre a obra · About the work</p><p class="nota">${esc(d.nota)}</p></div>`:''}
+        <p class="cert">Certifico que esta é uma obra original e única, criada e assinada por mim.<span>I certify that this is an original, one-of-a-kind artwork, created and signed by me.</span></p></div></div>
+    <div class="pe"><div class="ass">${imgOk(d.sig)?`<img src="${esc(d.sig)}" alt="Assinatura de Bruno Lorenz">`:''}<div class="linha"></div><b>Bruno Lorenz</b><p class="rot" style="margin:.3cqw 0 0">Artista · Artist &nbsp; @unspredinhos</p></div>
+      <div style="text-align:right"><p class="rot">Data de emissão · Date of issue</p><span class="txt">${esc(dataTxt)}</span></div></div>`}
+/* ---------- som: sininhos e papel, bem baixinho, feitos na hora ---------- */
+let ac=null,som=true;
+function toca(tipo){if(!som)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const t=ac.currentTime;
+  const nota=(f,q,dur,vol)=>{const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0.0001,t+q);g.gain.exponentialRampToValueAtTime(vol,t+q+.03);g.gain.exponentialRampToValueAtTime(.0001,t+q+dur);o.connect(g).connect(ac.destination);o.start(t+q);o.stop(t+q+dur+.05)};
+  const papel=(q,dur,vol,freq)=>{const n=Math.floor(ac.sampleRate*dur),b=ac.createBuffer(1,n,ac.sampleRate),c=b.getChannelData(0);for(let i=0;i<n;i++)c[i]=(Math.random()*2-1)*Math.pow(1-i/n,2);const s=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();s.buffer=b;f.type='bandpass';f.frequency.value=freq;f.Q.value=.7;g.gain.value=vol;s.connect(f).connect(g).connect(ac.destination);s.start(t+q)};
+  if(tipo==='abre'){papel(.12,.5,.05,1800);papel(.6,.6,.04,2600);[[523.25,1.25],[659.25,1.37],[783.99,1.49],[1046.5,1.66]].forEach(([f,q])=>{nota(f,q,2.2,.045);nota(f*2,q,1.3,.01)})}
+  if(tipo==='selo'){nota(130.8,0,.35,.09);nota(1568,.02,.9,.018)}
+  if(tipo==='vira'){papel(0,.35,.035,2200);nota(880,.12,.5,.014)}}catch(e){}}
+$('#som').addEventListener('click',e=>{som=!som;e.currentTarget.textContent=som?'Som ligado':'Som desligado';e.currentTarget.setAttribute('aria-pressed',som)});
+/* ---------- céu de luzes ---------- */
+const cv=$('#ceu'),cx=cv.getContext('2d');let W=0,H=0,DPR=Math.min(2,devicePixelRatio||1),luzes=[],fagulhas=[];
+function mede(){W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;cx.setTransform(DPR,0,0,DPR,0,0)}
+function semeia(){luzes=Array.from({length:Math.round(Math.min(130,W*H/9000))},()=>({x:Math.random()*W,y:Math.random()*H,z:.25+Math.random()*.75,t:Math.random()*6.28,v:.4+Math.random()*1.2,c:Math.random()<.72?'255,212,107':Math.random()<.5?'185,200,250':'255,139,209'}))}
+function estoura(x,y,n=90){for(let i=0;i<n;i++){const a=Math.random()*6.28,v=2+Math.random()*11;fagulhas.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-3,s:3+Math.random()*8,r:Math.random()*6.28,vr:(Math.random()-.5)*.4,vida:1,c:['#FFD46B','#fff6cf','#7FD6FF','#FF8BD1','#2B50FF'][i%5]})}}
+/* ---------- luz e inclinação ---------- */
+const card=$('#card');let alvo={x:0,y:0},cur={x:0,y:0},flip=0,flipAlvo=0,t0=performance.now(),mexeu=0,giro=false;
+function aponta(px,py){const b=card.getBoundingClientRect();if(!b.width)return;alvo.x=Math.max(-1,Math.min(1,(px-(b.left+b.width/2))/(b.width/2)));alvo.y=Math.max(-1,Math.min(1,(py-(b.top+b.height/2))/(b.height/2)));mexeu=performance.now()}
+addEventListener('pointermove',e=>{if(e.pointerType!=='touch'||e.buttons)aponta(e.clientX,e.clientY)},{passive:true});
+function orienta(e){if(e.gamma==null)return;giro=true;alvo.x=Math.max(-1,Math.min(1,e.gamma/28));alvo.y=Math.max(-1,Math.min(1,(e.beta-42)/28));mexeu=performance.now()}
+function quadro(now){const t=(now-t0)/1000;
+  cx.clearRect(0,0,W,H);
+  for(const l of luzes){const a=(.25+.75*(.5+.5*Math.sin(t*l.v+l.t)))*l.z*.8,s=1.5+l.z*4,x=l.x-cur.x*26*l.z,y=l.y-cur.y*18*l.z-((t*6*l.z)%H),yy=((y%H)+H)%H;
+    cx.beginPath();cx.fillStyle=`rgba(${l.c},${a*.14})`;cx.arc(x,yy,s*3.2,0,6.29);cx.fill();cx.beginPath();cx.fillStyle=`rgba(${l.c},${a})`;cx.arc(x,yy,s,0,6.29);cx.fill()}
+  for(let i=fagulhas.length-1;i>=0;i--){const f=fagulhas[i];f.x+=f.vx;f.y+=f.vy;f.vy+=.22;f.vx*=.985;f.r+=f.vr;f.vida-=.012;if(f.vida<=0){fagulhas.splice(i,1);continue}
+    cx.save();cx.translate(f.x,f.y);cx.rotate(f.r);cx.globalAlpha=Math.min(1,f.vida*1.6);cx.fillStyle=f.c;cx.shadowColor=f.c;cx.shadowBlur=14;cx.fillRect(-f.s/2,-f.s/5,f.s,f.s/2.5);cx.restore()}
+  if(!RM){if(now-mexeu>2600&&!giro){alvo.x=Math.sin(t*.7)*.45;alvo.y=Math.cos(t*.9)*.3}cur.x+=(alvo.x-cur.x)*.07;cur.y+=(alvo.y-cur.y)*.07}
+  flip+=(flipAlvo-flip)*.085;if(Math.abs(flipAlvo-flip)<.05)flip=flipAlvo;
+  const v=((flip%360)+360)%360;card.classList.toggle('virado',v>90&&v<270);const lado=card.classList.contains('virado')?-1:1;
+  card.style.setProperty('--ry',(cur.x*13+flip).toFixed(2)+'deg');card.style.setProperty('--rx',(-cur.y*11).toFixed(2)+'deg');
+  card.style.setProperty('--mx',(50+cur.x*lado*45).toFixed(1)+'%');card.style.setProperty('--my',(42+cur.y*45).toFixed(1)+'%');
+  card.style.setProperty('--h',(50+cur.x*38+cur.y*14).toFixed(1)+'%');card.style.setProperty('--sx',(-cur.x*34).toFixed(1)+'px');card.style.setProperty('--sy',(30-cur.y*22).toFixed(1)+'px');
+  requestAnimationFrame(quadro)}
+/* ---------- abrir, virar, salvar ---------- */
+function abre(){if(!d||document.body.classList.contains('abrindo'))return;toca('abre');
+  try{if(typeof DeviceOrientationEvent!=='undefined'&&DeviceOrientationEvent.requestPermission)DeviceOrientationEvent.requestPermission().then(s=>{if(s==='granted')addEventListener('deviceorientation',orienta)}).catch(()=>{});else addEventListener('deviceorientation',orienta)}catch(e){}
+  document.body.classList.add('abrindo');
+  setTimeout(()=>{$('#intro').hidden=true;$('#palco').hidden=false;document.body.classList.add('aberto');card.classList.add('pronto');scrollTo(0,0);estoura(W/2,H*.45,RM?0:120)},RM?0:1550);
+  setTimeout(()=>{const s=document.querySelector('.frente .selo');if(s){toca('selo');if(!RM){const b=s.getBoundingClientRect();estoura(b.left+b.width/2,b.top+b.height/2,46)}}},RM?0:4450)}
+$('#abrir').addEventListener('click',abre);
+const vira=()=>{flipAlvo+=180;toca('vira');$('#virar').textContent=(flipAlvo/180)%2?'Ver a frente':'Virar o certificado'};
+card.addEventListener('click',vira);card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();vira()}});$('#virar').addEventListener('click',vira);
+function quebra(c,t,x,y,w,lh,max=9){const ps=String(t).split(/\s+/);let l='',n=0;for(const p of ps){const z=l?l+' '+p:p;if(c.measureText(z).width>w&&l){n++;if(n>=max){c.fillText(l.replace(/.{0,2}$/,'…'),x,y);return y+lh}c.fillText(l,x,y);y+=lh;l=p}else l=z}if(l){c.fillText(l,x,y);y+=lh}return y}
+function desenhaCert(cv,d){const W=2480,H=1754,M=150;cv.width=W;cv.height=H;const c=cv.getContext('2d');
+  const T='#0E1A44',C='#2B50FF',G='#56618A',D='"Bricolage Grotesque","DM Sans",system-ui,sans-serif',X='"DM Sans",system-ui,sans-serif';
+  c.fillStyle='#fff';c.fillRect(0,0,W,H);c.strokeStyle=T;c.lineWidth=4;c.strokeRect(64,64,W-128,H-128);c.fillStyle=C;c.fillRect(64,64,W-128,14);
+  c.textBaseline='alphabetic';c.textAlign='left';
+  c.fillStyle=T;c.font='800 108px '+D;c.fillText('Certificado de Autenticidade',M,306);
+  c.fillStyle=G;c.font='500 52px '+D;c.fillText('Certificate of Authenticity',M+4,388);
+  c.textAlign='right';c.fillStyle=G;c.font='400 30px '+X;c.fillText('Nº · No.',W-M,250);c.fillStyle=T;c.font='700 50px '+D;c.fillText(d.num||'',W-M,316);c.textAlign='left';
+  c.fillStyle=T;c.fillRect(M,450,W-2*M,3);
+  const rot=(pt,en,x,y)=>{c.fillStyle=G;c.font='400 30px '+X;c.fillText(pt+' · '+en,x,y)};
+  const campo=(pt,en,v,x,y,w,tam=46,max=2)=>{if(!v)return y;rot(pt,en,x,y);c.fillStyle=T;c.font='600 '+tam+'px '+D;return quebra(c,v,x,y+tam+18,w,tam*1.2,max)+34};
+  // coluna da obra
+  const cx=M,cw=1320,meio=cw/2-30;let y=540;
+  let tw=cw;if(fotoImg){const e=Math.min(230/fotoImg.width,230/fotoImg.height),fw=fotoImg.width*e,fh=fotoImg.height*e,fx=cx+cw-fw-14,fy=524;tw=cw-fw-70;
+    c.fillStyle='#fff';c.fillRect(fx-12,fy-12,fw+24,fh+24);c.strokeStyle='#CBD5EE';c.lineWidth=2;c.strokeRect(fx-12,fy-12,fw+24,fh+24);c.drawImage(fotoImg,fx,fy,fw,fh)}
+  rot('Título da obra','Title',cx,y);c.fillStyle=T;c.font='800 92px '+D;y=Math.max(quebra(c,d.titulo||'Sem título',cx,y+112,tw,100,2)+30,fotoImg?800:0);
+  let y1=campo('Técnica','Medium',d.tecnica,cx,y,meio),y2=campo('Dimensões','Dimensions',d.dim,cx+cw/2,y,meio);y=Math.max(y1,y2);
+  y1=campo('Ano','Year',d.ano,cx,y,meio);y2=campo('Local de criação','Place of creation',d.local,cx+cw/2,y,meio);y=Math.max(y1,y2);
+  y=campo('Materiais','Materials',d.materiais,cx,y,cw,40,2);
+  if(d.nota){rot('Nota sobre a obra','About the work',cx,y);c.fillStyle=T;c.font='400 36px '+X;quebra(c,d.nota,cx,y+56,cw,48,Math.max(1,Math.floor((1440-(y+56))/48)+1))}
+  // coluna de quem adquiriu
+  const rx=1600,rw=W-M-rx;c.fillStyle='#EEF2FB';c.fillRect(rx-50,500,rw+100,760);let ry=590;
+  if(d.comprador){rot('Adquirida por','Acquired by',rx,ry);c.fillStyle=T;c.font='800 68px '+D;ry=quebra(c,d.comprador,rx,ry+88,rw,76,2)+30}
+  if(d.dedic){rot('Dedicatória','Dedication',rx,ry);c.fillStyle=T;c.font='italic 400 40px '+X;ry=quebra(c,d.dedic,rx,ry+58,rw,52,5)+30}
+  c.fillStyle=T;c.font='500 32px '+X;let sy=quebra(c,'Certifico que esta é uma obra original e única, criada e assinada por mim.',rx,Math.max(ry+10,1010),rw,42,3);
+  c.fillStyle=G;c.font='400 30px '+X;quebra(c,'I certify that this is an original, one-of-a-kind artwork, created and signed by me.',rx,sy+10,rw,40,3);
+  // rodapé: data à esquerda, assinatura à direita (sob o quadro de quem adquiriu)
+  const by=1570;rot('Data de emissão','Date of issue',M,by-62);c.fillStyle=T;c.font='700 44px '+D;
+  const dt=/^\d{4}-\d\d-\d\d$/.test(d.data||'')?+d.data.slice(8)+' de '+MESL[+d.data.slice(5,7)-1].toLowerCase()+' de '+d.data.slice(0,4):(d.data||'');c.fillText(dt,M,by-8);
+  c.fillStyle=T;c.fillRect(rx-50,by-70,rw+100,3);
+  if(sigImg){const e=Math.min(600/sigImg.width,190/sigImg.height),w=sigImg.width*e,h=sigImg.height*e;c.drawImage(sigImg,rx-30,by-80-h,w,h)}
+  c.fillStyle=T;c.font='700 44px '+D;c.fillText('Bruno Lorenz',rx-50,by-8);c.fillStyle=G;c.font='400 30px '+X;c.fillText('Artista · Artist      @unspredinhos',rx-50,by+40);
+  return cv}
+$('#salvar').addEventListener('click',async()=>{try{await Promise.all(['800 124px "Bricolage Grotesque"','600 46px "Bricolage Grotesque"','400 30px "DM Sans"','italic 400 40px "DM Sans"'].map(f=>document.fonts.load(f)))}catch(e){}
+  const baixa=()=>desenhaCert(document.createElement('canvas'),d).toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='certificado-'+String(d.num||'').replace(/[^\w-]+/g,'-')+'.png';a.click()},'image/png');
+  try{baixa()}catch(e){sigImg=fotoImg=null;baixa()}});
+if(navigator.share){$('#comp').hidden=false;$('#comp').addEventListener('click',()=>navigator.share({title:document.title,url:location.href}).catch(()=>{}))}
+mede();semeia();addEventListener('resize',()=>{mede();semeia()});requestAnimationFrame(quadro);
+(async()=>{try{const r=await busca();d=r.d;const p=(d.comprador||'').trim().split(/\s+/)[0];
+    if(!r.ex&&p){$('#ola').textContent=p+', chegou uma carta para você.';$('#para').textContent='Para '+d.comprador}else $('#para').textContent=r.ex?'Certificado de exemplo':'';
+    monta();[sigImg,fotoImg]=await Promise.all([carrega(d.sig),carrega(d.foto)]);
+    $('#abrir').disabled=false;$('#dica').textContent='Toque no lacre para abrir'}
+  catch(e){$('#ola').textContent='Não consegui abrir este certificado.';$('#dica').textContent='Confira se o link está completo e se há conexão com a internet.'}})();
+</script>
+</body>
+</html>
