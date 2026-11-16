@@ -231,6 +231,24 @@ body[data-aba=feira],body[data-aba=feira] #top{background:#ECEEE6}
 body.kmf{overflow:hidden}body.kmf nav,body.kmf #top{display:none}
 @page{size:A4;margin:10mm}
 @media print{body{background:#fff!important}#top,nav,#gav,#veu,#tip,#cur,#foto{display:none!important}main{padding:0!important}#kit{margin:0}}
+#dir{display:flex;align-items:center;gap:clamp(8px,1.4vw,18px);min-width:0}
+#aj{font:600 14px var(--disp);text-decoration:underline;text-underline-offset:4px;opacity:.85}
+#aj[aria-pressed=true]{opacity:1;text-decoration-thickness:2px}
+#cronb{display:flex;align-items:center;gap:7px;padding:5px 10px;background:var(--atraso);color:#fff;font:700 13px var(--disp);font-variant-numeric:tabular-nums;white-space:nowrap}
+#cronb[hidden]{display:none}
+#cronb i{width:8px;height:8px;border-radius:50%;background:#fff;animation:p 1s infinite}
+@media(max-width:560px){#marca{font-size:16px}#sync span{max-width:84px;overflow:hidden;text-overflow:ellipsis}}
+.cronl{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.cronl b{font:800 40px/1 var(--disp);font-stretch:78%;letter-spacing:-.03em;min-width:3.4ch}
+.lk{color:var(--cobalto);text-decoration:underline;text-underline-offset:3px;font-size:14px}
+.acs{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:560px){.acs{grid-column:1/-1;justify-content:flex-start}}
+.ins{padding:clamp(18px,2.4vw,30px) 0;border-bottom:1px solid var(--linha)}
+.ins:first-child{padding-top:0}
+.ins .frase{font:600 clamp(22px,2.7vw,40px)/1.12 var(--disp);letter-spacing:-.025em;margin:0 0 10px;max-width:30ch;text-wrap:balance}
+.ins .frase b{font-weight:800;color:var(--cobalto)}
+.ins.a .frase b{color:var(--alizarina)}.ins.v .frase b{color:var(--viridian)}
+.ins .muted{margin:0;max-width:62ch;font-size:15px}
 /* modo leve */
 body.leve *,body.leve *::before,body.leve *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 body.leve #cur{display:none!important}
@@ -251,7 +269,7 @@ body.leve .lin:hover,body.leve .fp:hover{padding-left:8px}
 <div id="top">
   <div id="marca">uns predinhos<i>.</i>gestão</div>
   <nav id="nav"></nav>
-  <div id="sync"><b></b><span></span></div>
+  <div id="dir"><button id="cronb" data-a="abrir" hidden><i></i><span></span></button><button id="aj" data-a="aba" data-k="ajustes">Ajustes</button><div id="sync"><b></b><span></span></div></div>
 </div>
 <main id="app"></main>
 <div id="veu" data-a="fechar"></div>
@@ -299,28 +317,32 @@ completa();
 const guardaUi=()=>{try{localStorage[LSU]=JSON.stringify(ui)}catch(e){}};
 
 /* ============ salvamento automático + planilha do Google ============ */
-let sujo=false, timer=0, enviando=false;
+let sujo=false, timer=0, enviando=false, forcar=false, ultErro='';
+const guardaConta=()=>{try{localStorage[LSC]=JSON.stringify(conta)}catch(e){}};
 function estado(c,t){const e=$('#sync');e.className=c;e.lastElementChild.textContent=t}
 function salvar(){S.updatedAt=Date.now();try{localStorage[LS]=JSON.stringify(S)}catch(e){}
   if(!conta.url){estado('off','Salvo neste aparelho');return}
   sujo=true;estado('busy','Salvando…');clearTimeout(timer);timer=setTimeout(enviar,2000)}
 async function resposta(r){if(!r.ok)throw new Error('A planilha respondeu '+r.status);let j;try{j=await r.json()}catch(e){throw new Error('O link não respondeu como esperado. Confira se é o link do App da Web, terminado em /exec, com acesso para "Qualquer pessoa"')}
   if(j.erro)throw new Error(j.erro);return j}
-const gravarRemoto=()=>fetch(conta.url,{method:'POST',body:JSON.stringify({k:conta.senha,dados:S})}).then(resposta);
+const gravarRemoto=()=>fetch(conta.url,{method:'POST',body:JSON.stringify({k:conta.senha,dados:S,base:conta.base||0,forca:forcar})}).then(resposta);
+const pedeRemoto=q=>fetch(conta.url+'?k='+encodeURIComponent(conta.senha)+'&'+q+'&t='+Date.now()).then(resposta);
 const lerRemoto=()=>fetch(conta.url+'?k='+encodeURIComponent(conta.senha)+'&t='+Date.now()).then(resposta);
 async function enviar(){if(enviando){timer=setTimeout(enviar,800);return}enviando=true;const marca=S.updatedAt;
-  try{await gravarRemoto();if(S.updatedAt===marca){sujo=false;estado('','Salvo na planilha')}else{clearTimeout(timer);timer=setTimeout(enviar,300)}}
-  catch(e){estado('err','Sem conexão: salvo neste aparelho');clearTimeout(timer);timer=setTimeout(enviar,15000)}
+  try{await gravarRemoto();conta.base=marca;forcar=false;guardaConta();if(S.updatedAt===marca){sujo=false;estado('','Salvo na planilha')}else{clearTimeout(timer);timer=setTimeout(enviar,300)}}
+  catch(e){clearTimeout(timer);if(/^Bloqueado/.test(e.message)){sujo=false;ultErro=e.message;estado('err','A planilha recusou gravar: abra Ajustes')}else{estado('err','Sem conexão: salvo neste aparelho');timer=setTimeout(enviar,15000)}}
   enviando=false}
 async function puxar(){if(!conta.url||sujo)return;
   try{estado('busy','Conferindo…');const r=await lerRemoto();
     if(r.feira==null)r.feira=S.feira;
-    if((r.updatedAt||0)>(S.updatedAt||0)){S=r;completa();localStorage[LS]=JSON.stringify(S);if(!document.body.classList.contains('g'))render()}
+    if((r.updatedAt||0)>(S.updatedAt||0)){S=r;completa();conta.base=r.updatedAt;guardaConta();localStorage[LS]=JSON.stringify(S);if(!document.body.classList.contains('g'))render()}
     else if((S.updatedAt||0)>(r.updatedAt||0)){sujo=true;return enviar()}
+    else{conta.base=r.updatedAt;guardaConta()}
     estado('','Salvo na planilha')}catch(e){estado('err',e.message)}}
 async function conectar(url,senha){conta={url,senha};const r=await lerRemoto();if(r.feira==null)r.feira=S.feira;
   if((r.pedidos||[]).length&&((r.updatedAt||0)>=(S.updatedAt||0)||!S.pedidos.length)){S=r;completa()}
-  else{if(!S.updatedAt)S.updatedAt=Date.now();await gravarRemoto()}
+  else{if(!S.updatedAt)S.updatedAt=Date.now();conta.base=r.updatedAt||0;await gravarRemoto()}
+  conta.base=S.updatedAt;
   localStorage[LSC]=JSON.stringify(conta);localStorage[LS]=JSON.stringify(S);estado('','Salvo na planilha')}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)puxar()});
 window.addEventListener('beforeunload',e=>{if(sujo&&conta.url){e.preventDefault();e.returnValue=''}});
@@ -344,7 +366,7 @@ function filtrados(){const b=ui.busca.trim().toLowerCase();
   return S.pedidos.filter(p=>{
     if(ui.tag&&!tem(p,ui.tag))return false;
     if(ui.mes&&(p.contato||'').slice(0,7)!==ui.mes)return false;
-    if(!ui.mes){if(ui.filtro==='abertas'&&!aberto(p))return false;if(ui.filtro==='atrasadas'&&!atrasado(p))return false;if(ui.filtro==='receber'&&!falta(p))return false}
+    if(!ui.mes){if(ui.filtro==='abertas'&&!aberto(p))return false;if(ui.filtro==='atrasadas'&&!atrasado(p))return false;if(ui.filtro==='receber'&&!falta(p))return false;if(ui.filtro==='pend'&&!(p.andamento==='Entregue'&&p.pago!=='Pago'))return false}
     return !b||[p.nome,p.cidade,p.obs,p.n,p.tamanho,...(p.tags||[]),...(p.tecnicas||[])].join(' ').toLowerCase().includes(b)})}
 
 /* ============ gráficos (SVG à mão) ============ */
@@ -435,7 +457,7 @@ function vEnc(){
     <div class="seg">${[['quadro','Quadro'],['lista','Lista'],['tabela','Tabela']].map(([k,l])=>`<button data-a="ver" data-k="${k}" aria-pressed="${ui.ver===k}">${l}</button>`).join('')}</div>
     <input type="search" id="busca" placeholder="Buscar nome, cidade, tamanho…" value="${esc(ui.busca)}" aria-label="Buscar">
     <select id="ftag" class="in" style="width:auto;border-bottom-color:var(--tinta);padding:10px 4px;${ui.tag?'color:var(--cobalto);font-weight:700':''}" aria-label="Filtrar por tag"><option value="">Todas as tags</option>${todasTags().map(([t,n])=>`<option value="${esc(t)}" ${ui.tag===t?'selected':''}>${esc(t)} (${n})</option>`).join('')}</select>
-    ${ui.ver!=='quadro'?`<div class="seg">${[['abertas','Em aberto'],['atrasadas','Atrasadas'],['receber','A receber'],['todas','Todas']].map(([k,l])=>`<button data-a="filtro" data-k="${k}" aria-pressed="${!ui.mes&&ui.filtro===k}">${l}</button>`).join('')}</div>`:''}
+    ${ui.ver!=='quadro'?`<div class="seg">${[['abertas','Em aberto'],['atrasadas','Atrasadas'],['receber','A receber'],['pend','Entregue sem quitar'],['todas','Todas']].map(([k,l])=>`<button data-a="filtro" data-k="${k}" aria-pressed="${!ui.mes&&ui.filtro===k}">${l}</button>`).join('')}</div>`:''}
     ${ui.mes?`<button class="btn q s" data-a="mes" data-k="">${MESL[+ui.mes.slice(5)-1]} ${ui.mes.slice(0,4)} ✕</button>`:''}
     <button class="btn" data-a="nova" style="margin-left:auto">Nova encomenda</button></div>`;
   let corpo='';
@@ -484,10 +506,12 @@ function gaveta(){const p=sel,sg=sugestao(p);
   <div class="duo">${c('Prazo: começo','prazoIni','date')}${c('Prazo: fim','prazoFim','date')}</div>
   <div class="campo"><span>Tags</span><div>${[...new Set([...todasTags().map(x=>x[0]),...(p.tags||[])])].filter(t=>t!=='Moldura'&&t!=='Pressa').map(t=>`<button class="tog" data-a="alt" data-f="tags" data-k="${esc(t)}" aria-pressed="${tem(p,t)}">${esc(t)}</button>`).join('')}</div>
     <input id="novatag" placeholder="Criar tag nova e apertar Enter" aria-label="Criar tag nova" enterkeyhint="done"></div>
+  <div class="campo"><span>Horas de trabalho nesta obra</span><div class="cronl"><b class="num" data-cron="${p.id}">${p.cron?fmtCron(p):fmtH(tempoDe(p))}</b><button class="btn ${p.cron?'p':''} s" data-a="cron" data-id="${p.id}">${p.cron?'Parar':'Iniciar cronômetro'}</button></div>
+    ${p.cron?'':`<label class="muted" style="display:flex;align-items:center;gap:8px;font-size:13px;margin-top:6px">ou digite o total em horas <input type="number" step="0.25" min="0" inputmode="decimal" data-f="horas" value="${p.horas||''}" placeholder="0" style="width:90px"></label>`}</div>
   <button class="btn" style="margin-top:28px" data-a="foto">Gerar imagem do pedido</button>
   <div style="margin-top:14px" id="apagar"><button class="btn q s" data-a="apagar1">Apagar encomenda</button></div>`}
 function campo(el){const p=sel,f=el.dataset.f;if(!p||!f)return;
-  if(f==='valor'||f==='n')p[f]=+el.value||0;
+  if(f==='valor'||f==='n'||f==='horas')p[f]=+String(el.value).replace(',','.')||0;
   else if(f==='tagsLivres')p.tags=[...(p.tags||[]).filter(t=>t==='Moldura'||t==='Pressa'),...el.value.split(',').map(s=>s.trim()).filter(Boolean)];
   else p[f]=el.value;salvar()}
 
@@ -509,7 +533,8 @@ function vPrecos(){const t=tabela(),pr=praticado(),k=TP.includes(ui.sim.t)?ui.si
       <div class="duo"><label class="bigin"><span>Sem moldura (R$)</span><input type="number" inputmode="numeric" data-pv="${k}.0" value="${t.t[k][0]}"></label><label class="bigin"><span>Com moldura (R$)</span><input type="number" inputmode="numeric" data-pv="${k}.1" value="${t.t[k][1]}"></label></div>
       <label class="sl"><span>Material <b id="sv-mat"></b></span><input type="range" min="0" max="${mx(c.mat,150)}" step="1" data-pc="${k}.mat" value="${c.mat||0}"></label>
       <label class="sl"><span>Custo da moldura <b id="sv-mold"></b></span><input type="range" min="0" max="${mx(c.mold,400)}" step="5" data-pc="${k}.mold" value="${c.mold||0}"></label>
-      <label class="sl"><span>Horas de trabalho <b id="sv-h"></b></span><input type="range" min="0" max="${mx(c.h,30)}" step="0.5" data-pc="${k}.h" value="${c.h||0}"></label></div>
+      <label class="sl"><span>Horas de trabalho <b id="sv-h"></b></span><input type="range" min="0" max="${mx(c.h,30)}" step="0.5" data-pc="${k}.h" value="${c.h||0}"></label>
+      ${(h=>h.n?`<p class="muted" style="font-size:14px;margin:6px 0 0">Cronometrado: média de ${fmtH(h.media)} em ${h.n} ${h.n==1?'obra':'obras'}. <button class="lk" data-a="usah" data-k="${k}">Usar essa média</button></p>`:'<p class="muted" style="font-size:14px;margin:6px 0 0">Cronometre algumas obras deste tamanho (na ficha do pedido) para ver aqui a média real.</p>')(horasReais(k))}</div>
     <div><div style="margin-bottom:22px"><button class="tog" data-a="simb" data-f="pressa" aria-pressed="${ui.sim.pressa}">Pressa +${S.precos.pressa}%</button>${[1,3,6,10,12].map(n=>`<button class="tog" data-a="simpx" data-k="${n}" aria-pressed="${ui.sim.px==n}">${n==1?'Pix':n+'x no cartão'}</button>`).join('')}</div>
       <div id="simr"></div></div>
   </section>
@@ -547,7 +572,8 @@ function dPrecos(){if(ui.aba!=='precos'||!$('#folhas'))return;const t=tabela(),m
 function vAjustes(){return `<h1 class="tit">Onde os dados moram.</h1>
   <div class="grade c2" style="margin-top:24px">
   <section class="folha"><h2>Planilha do Google</h2>
-    ${conta.url?`<p class="sub">Conectado. As encomendas ficam na aba Encomendas da sua planilha e cada alteração é enviada sozinha. Para usar em outro aparelho, abra esta página nele e cole o mesmo link e a mesma senha.</p><button class="btn q" data-a="sair">Desconectar este aparelho</button>`
+    ${conta.url?`<p class="sub">Conectado. As encomendas ficam na aba Encomendas da sua planilha e cada alteração é enviada sozinha. Para usar em outro aparelho, abra esta página nele e cole o mesmo link e a mesma senha.</p>${ultErro?`<p class="sub" style="color:var(--alizarina)">${esc(ultErro)}. Isso protege a base contra um aparelho desatualizado.</p><div class="barra"><button class="btn" data-a="descarta">Usar a versão da planilha</button><button class="btn q" data-a="forca">Gravar a deste aparelho mesmo assim</button></div>`:''}<button class="btn q" data-a="sair">Desconectar este aparelho</button>
+      <h2 style="margin-top:30px">Cópias de segurança</h2><p class="sub">A planilha guarda sozinha uma cópia no primeiro salvamento de cada dia (as 7 últimas) e outra quando um aparelho grava por cima de algo que não tinha visto. Ficam na aba Histórico.</p><div id="copias"><button class="btn q" data-a="copias">Ver as cópias</button></div>`
     :`<p class="sub">Cole o link do App da Web publicado na sua planilha (termina em /exec) e a senha que você definiu no script. Os dois ficam guardados só neste aparelho.</p>
       <label class="campo"><span>Link do App da Web</span><input type="url" id="purl" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec"></label>
       <label class="campo"><span>Senha</span><input type="password" id="psen" autocomplete="off"></label>
@@ -559,9 +585,9 @@ function vAjustes(){return `<h1 class="tit">Onde os dados moram.</h1>
       <p class="muted" style="margin:8px 0 0;font-size:14px">O modo leve desliga animações, transições entre telas, o cursor redondo e sombras, e encurta a tabela. Vale só para este aparelho.</p></div>
     <label class="campo" style="max-width:220px"><span>Taxa de pressa (%)</span><input type="number" data-pressa value="${S.precos.pressa}"></label></section></div>`}
 function baixar(nome,txt,tipo){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:tipo}));a.download=nome;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
-function csv(){const C=['n','nome','andamento','tamanho','tecnicas','tags','cidade','obs','contato','prazoIni','prazoFim','entregue','pago','pgto','valor'];
+function csv(){const C=['n','nome','andamento','tamanho','tecnicas','tags','cidade','obs','contato','prazoIni','prazoFim','entregue','pago','pgto','valor','horas'];
   const q=v=>{v=Array.isArray(v)?v.join(', '):String(v??'');return /[";\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
-  return '﻿'+C.join(';')+'\n'+S.pedidos.map(p=>C.map(c=>c==='valor'?String(p.valor).replace('.',','):q(p[c])).join(';')).join('\n')}
+  return '﻿'+C.join(';')+'\n'+S.pedidos.map(p=>C.map(c=>c==='valor'||c==='horas'?String(p[c]||0).replace('.',','):q(p[c])).join(';')).join('\n')}
 
 /* ============ programação da semana ============ */
 const APINTAR=['Fila','Rascunhos','Nanquim','Aquarela'];
@@ -596,12 +622,81 @@ function dSemana(){if(ui.aba!=='semana'||!$('#semcorpo'))return;const pl=plano()
   $('#capn').textContent=pl.cap;
   $('#semtit').innerHTML=s0?`Semana de ${semTxt(s0.ini)}: ${s0.itens.length} para pintar.`:'Nada na fila para pintar.';
   const zera=pl.sem.findIndex(s=>s.atr===0),mxa=Math.max(1,...pl.sem.map(s=>s.itens.length));
-  const linha=({p,m},acao)=>{const i=ETAPAS.indexOf(p.andamento),prox=ETAPAS[i+1];return `<div class="fp" style="${vtn(p)}"><button data-a="abrir" data-id="${p.id}"><i class="jn ${jc(p)}"></i><b>${nr(p)}${esc(p.nome)}</b> <span class="muted">${esc(p.tamanho&&TAM[p.tamanho]?.l||'')}${tem(p,'Moldura')?' com moldura':''} · ${esc(p.andamento)}${p.cidade?' · '+esc(p.cidade):''}</span></button><span class="chip ${/atrasada/.test(m)?'a':/pressa|Natal/.test(m)?'o':''}">${m}</span>${acao==='entrega'?`<button class="btn q s" data-a="entrega" data-id="${p.id}">Marcar entregue</button>`:`<button class="btn q s" data-a="avanca" data-id="${p.id}">Passar para ${prox}</button>`}</div>`};
+  const linha=({p,m},acao)=>{const i=ETAPAS.indexOf(p.andamento),prox=ETAPAS[i+1];return `<div class="fp" style="${vtn(p)}"><button data-a="abrir" data-id="${p.id}"><i class="jn ${jc(p)}"></i><b>${nr(p)}${esc(p.nome)}</b> <span class="muted">${esc(p.tamanho&&TAM[p.tamanho]?.l||'')}${tem(p,'Moldura')?' com moldura':''} · ${esc(p.andamento)}${p.cidade?' · '+esc(p.cidade):''}</span></button><span class="chip ${/atrasada/.test(m)?'a':/pressa|Natal/.test(m)?'o':''}">${m}</span>${acao==='entrega'?`<button class="btn q s" data-a="entrega" data-id="${p.id}">Marcar entregue</button>`:`<span class="acs"><button class="btn ${p.cron?'p':'q'} s" data-a="cron" data-id="${p.id}">${p.cron?'Parar '+fmtCron(p).slice(0,-3):'Cronometrar'}</button><button class="btn q s" data-a="avanca" data-id="${p.id}">Passar para ${prox}</button></span>`}</div>`};
   $('#semcorpo').innerHTML=(s0?s0.itens.map(x=>linha(x)).join(''):'<p class="sub">Tudo o que estava na fila já foi pintado.</p>')+
     (ent.length?`<h2 style="margin-top:clamp(36px,5vw,64px)">Só falta entregar</h2><p class="sub">Prontas, não ocupam vaga de pintura.</p>${ent.map(p=>linha({p,m:prazoTxt(p)},'entrega')).join('')}`:'')+
     (pl.sem.length>1?`<h2 style="margin-top:clamp(36px,5vw,64px)">As próximas semanas</h2>
     <p class="sub" style="max-width:70ch">${zera<0?'Nesse ritmo os atrasos não zeram dentro do horizonte calculado.':zera===0?'Com a semana atual, nenhuma encomenda da fila fica atrasada.':`Nesse ritmo, a fila de hoje deixa de ter atrasos na semana de ${semTxt(pl.sem[zera].ini)} (${zera+1} semanas) e acaba na semana de ${semTxt(pl.sem[pl.sem.length-1].ini)}.`} A conta só olha para as ${pl.total} encomendas que já estão na fila${r.che>=pl.cap?`; como entram ${r.che.toFixed(1).replace('.',',')} pedidos novos por semana, com ${pl.cap} obras por semana a fila não diminui`:''}.</p>
     <div class="sems">${pl.sem.map((s,i)=>`<div class="${i===0?'at':''}"><div class="pil" style="height:${mxa*26+8}px">${s.itens.map(({p,m})=>`<button class="jn ${jc(p)}" data-a="abrir" data-id="${p.id}" data-tip="${esc((p.n?'nº '+p.n+' · ':'')+p.nome+'\n'+(p.tamanho||'')+' · '+p.andamento+'\n'+m)}" aria-label="${esc(p.nome)}"></button>`).join('')}</div><b>${+s.ini.slice(8)} ${MES[+s.ini.slice(5,7)-1]}</b><span class="${s.atr?'':'ok'}">${s.atr?s.atr+' atras.':'em dia'}</span></div>`).join('')}</div>`:'')}
+
+/* ============ horas reais (cronômetro por obra) ============ */
+const tempoDe=p=>(+p.horas||0)+(p.cron?(Date.now()-p.cron)/36e5:0);
+const fmtH=h=>{const m=Math.round(h*60);return Math.floor(m/60)+'h'+String(m%60).padStart(2,'0')};
+const fmtCron=p=>{const s=Math.floor(tempoDe(p)*3600);return Math.floor(s/3600)+':'+String(Math.floor(s/60)%60).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+function paraCron(p){if(p.cron){p.horas=Math.round(tempoDe(p)*100)/100;p.cron=0}}
+function horasReais(k){const v=S.pedidos.filter(p=>p.tamanho===k&&!p.cron&&+p.horas>0).map(p=>+p.horas);return {n:v.length,media:v.length?sum(v)/v.length:0}}
+function tique(){const r=S.pedidos.find(p=>p.cron),b=$('#cronb');
+  if(b){b.hidden=!r;if(r){b.dataset.id=r.id;b.lastElementChild.textContent=(r.n?'nº '+r.n+' · ':'')+fmtCron(r)}}
+  $$('[data-cron]').forEach(e=>{const p=S.pedidos.find(x=>x.id===e.dataset.cron);if(p)e.textContent=p.cron?fmtCron(p):fmtH(tempoDe(p))})}
+setInterval(tique,1000);
+
+/* ============ insights: frases curtas tiradas dos dados ============ */
+function insights(){const L=[],val=S.pedidos.filter(p=>p.andamento!=='Cancelada'),b=x=>`<b>${x}</b>`,f1=x=>x.toFixed(1).replace('.',','),pc=x=>Math.round(x*100)+'%';
+  const ano=HOJE.slice(0,4),ant=String(+ano-1),add=(id,g,tom,t,d,ac)=>L.push({id,g,tom,t,d,ac});
+  const doAno=a=>val.filter(p=>(p.contato||'').startsWith(a));
+  // ---- fila e prazos
+  const r=ritmo(),and=S.pedidos.filter(ativo),atr=and.filter(atrasado),G1='Fila e prazos';
+  if(r.che||r.ent){const d=r.che-r.ent;
+    add('ritmo',G1,d>.2?'a':d<-.2?'v':'',d>.2?`Entram ${b(f1(r.che))} pedidos por semana e saem ${b(f1(r.ent))}. A fila cresce perto de ${b(f1(d*4.3))} por mês.`:d<-.2?`Saem ${b(f1(r.ent))} obras por semana e entram ${b(f1(r.che))} pedidos. A fila encolhe perto de ${b(f1(-d*4.3))} por mês.`:`Entram e saem cerca de ${b(f1(r.che))} pedidos por semana. A fila está estável.`,'Média das últimas 12 semanas, pela data do contato e da entrega.','semana|Abrir a programação')}
+  if(atr.length){const v=[...atr].sort((x,y)=>x.prazoFim.localeCompare(y.prazoFim))[0];
+    add('atraso',G1,'a',`${b(atr.length)} das ${and.length} encomendas em andamento passaram do prazo. A mais antiga é a ${b('nº '+v.n)}, de ${esc(v.nome)}.`,'Conta Fila, Rascunhos, Nanquim, Aquarela e Finalizado com prazo vencido.','enc:atrasadas|Ver as atrasadas')}
+  else if(and.length)add('atraso',G1,'v',`Nenhuma das ${b(and.length)} encomendas em andamento está atrasada.`,'Conta as etapas de Fila a Finalizado.');
+  const esp=a=>med(doAno(a).filter(p=>p.entregue).map(p=>dias(p.contato,p.entregue)).filter(x=>x>=0)),nEsp=a=>doAno(a).filter(p=>p.entregue).length;
+  if(nEsp(ano)>=5&&nEsp(ant)>=5){const e1=esp(ano),e0=esp(ant);
+    add('espera',G1,e1>e0*1.1?'a':e1<e0*.9?'v':'',`Quem pediu em ${ano} esperou ${b(Math.round(e1)+' dias')} pela obra. Em ${ant} eram ${b(Math.round(e0)+' dias')}.`,'Mediana entre a data do contato e a da entrega, só dos pedidos já entregues.')}
+  const fin=S.pedidos.filter(p=>p.andamento==='Finalizado');
+  if(fin.length)add('prontas',G1,'',`${b(fin.length)} ${fin.length==1?'obra pronta espera':'obras prontas esperam'} só a entrega.`,'Estão em Finalizado. Entregar não ocupa tempo de pintura.','semana|Ver quais são');
+  // ---- dinheiro
+  const G2='Dinheiro',rec=sum(S.pedidos,falta),nrec=S.pedidos.filter(falta).length;
+  if(rec)add('receber',G2,'',`Há ${b(brl(rec))} a receber em ${nrec} encomendas abertas.`,'Metade do valor de quem pagou sinal e o valor inteiro de quem ainda não pagou.','enc:receber|Ver quem falta pagar');
+  const pend=S.pedidos.filter(p=>p.andamento==='Entregue'&&p.pago!=='Pago');
+  if(pend.length)add('pend',G2,'a',`${b(pend.length)} encomendas entregues ainda constam sem quitação: até ${b(brl(sum(pend,p=>p.pago==='Sinal'?p.valor/2:p.valor)))}.`,'Pode ser dinheiro a cobrar ou só cadastro que não foi atualizado. Vale conferir uma a uma.','enc:pend|Conferir a lista');
+  const ytd=a=>sum(val.filter(p=>p.contato&&p.contato>=a+'-01-01'&&p.contato<=a+HOJE.slice(4)),p=>p.valor),y1=ytd(ano),y0=ytd(ant);
+  if(y0>0&&y1>0)add('ytd',G2,y1>=y0?'v':'a',`Até hoje, ${ano} somou ${b(brl(y1))} em encomendas: ${b((y1>=y0?'+':'')+Math.round((y1/y0-1)*100)+'%')} sobre o mesmo período de ${ant}.`,'Soma do valor das encomendas pela data do contato, de 1º de janeiro até o dia de hoje em cada ano.');
+  const tk=a=>{const p=doAno(a);return p.length?sum(p,x=>x.valor)/p.length:0};
+  if(doAno(ano).length>=10&&doAno(ant).length>=10)add('ticket',G2,tk(ano)>=tk(ant)?'v':'a',`Cada pedido de ${ano} vale em média ${b(brl(tk(ano)))}. Em ${ant} valia ${b(brl(tk(ant)))}.`,'Valor total dividido pelo número de pedidos de cada ano.');
+  const ct=val.filter(p=>p.tamanho),vt=sum(ct,p=>p.valor);
+  if(ct.length>20){const t=Object.keys(TAM).map(k=>({k,n:ct.filter(p=>p.tamanho===k).length,v:sum(ct.filter(p=>p.tamanho===k),p=>p.valor)})).sort((x,y)=>y.v-x.v)[0];
+    add('tam',G2,'',`O ${b(TAM[t.k].l)} traz ${b(pc(t.v/vt))} do dinheiro com ${b(pc(t.n/ct.length))} dos pedidos.`,'Entre as encomendas com tamanho definido, em todo o histórico.')}
+  const cp=val.filter(p=>p.pgto);if(cp.length>20)add('pix',G2,'',`${b(pc(cp.filter(p=>p.pgto==='Pix').length/cp.length))} dos pagamentos registrados foram por Pix.`,'Entre os pedidos com forma de pagamento preenchida.');
+  // ---- preços
+  const G3='Preços',pr=praticado(),a4=pr.series[2].pts,i0=a4.findIndex(v=>v!=null),i1=a4.length-1-[...a4].reverse().findIndex(v=>v!=null);
+  if(i0>=0&&i1>i0)add('a4',G3,'v',`O A4 simples saiu de ${b(brl(a4[i0]))} em ${pr.anos[i0]} para ${b(brl(a4[i1]))} em ${pr.anos[i1]}.`,'Mediana do valor das aquarelas A4 de uma obra, sem moldura, em cada ano.','precos|Abrir os preços');
+  const tb=tabela().t.A4?.[0];if(i1>=0&&a4[i1]&&tb&&Math.abs(tb/a4[i1]-1)>.05)add('tabela',G3,'',`A tabela pede ${b(brl(tb))} pelo A4 e a mediana cobrada em ${pr.anos[i1]} foi ${b(brl(a4[i1]))}.`,tb>a4[i1]?'A diferença costuma vir de pedidos fechados antes do último reajuste.':'Você tem cobrado acima da tabela; talvez ela esteja defasada.','precos|Abrir os preços');
+  const mo=a=>{const p=doAno(a);return p.length>=10?p.filter(x=>tem(x,'Moldura')).length/p.length:null},m1=mo(ano),m0=mo(ant);
+  if(m1!=null)add('moldura',G3,'',`${b(pc(m1))} dos pedidos de ${ano} saíram com moldura${m0!=null?`. Em ${ant} foram ${b(pc(m0))}`:''}.`,'Pedidos marcados com Moldura sobre o total do ano.');
+  const ps=doAno(ano).filter(p=>tem(p,'Pressa'));if(ps.length)add('pressa',G3,'',`${b(ps.length)} pedidos de ${ano} vieram com pressa (${pc(ps.length/doAno(ano).length)} do ano).`,`A taxa de pressa hoje é de ${S.precos.pressa}%.`,'enc:tag:Pressa|Ver esses pedidos');
+  // ---- clientes
+  const G4='Clientes',cl={};val.forEach(p=>{const k=(p.nome||'').replace(/\s*\(\d+\)\s*$/,'').trim().toLowerCase();if(k)(cl[k]=cl[k]||[]).push(p)});
+  const rp=Object.values(cl).filter(v=>v.length>1),tot=sum(val,p=>p.valor);
+  if(rp.length)add('volta',G4,'v',`${b(rp.length)} clientes encomendaram mais de uma obra. Juntos respondem por ${b(pc(sum(rp,v=>sum(v,p=>p.valor))/tot))} do faturamento.`,'Agrupa pedidos pelo mesmo nome, incluindo os de várias obras de uma vez.');
+  const cc={};val.forEach(p=>{const c=(p.cidade||'').split(',')[0].trim();if(c.length>2)cc[c]=(cc[c]||0)+1});const ce=Object.entries(cc).sort((x,y)=>y[1]-x[1]),nc=sum(ce,x=>x[1]);
+  if(ce.length>3)add('cid',G4,'',`Já foram pintados predinhos de ${b(ce.length)} cidades. ${b(esc(ce[0][0]))} é ${b(pc(ce[0][1]/nc))} deles.`,'Só entre os pedidos com cidade preenchida.');
+  const anosC=[...new Set(val.map(p=>(p.contato||'').slice(0,4)).filter(a=>a&&a<ano))].filter(a=>doAno(a).length>=50);
+  if(anosC.length){const mm=Array(12).fill(0);val.filter(p=>anosC.includes((p.contato||'').slice(0,4))).forEach(p=>mm[+p.contato.slice(5,7)-1]++);const o=mm.map((n,i)=>[n,i]).sort((x,y)=>y[0]-x[0]),tm=sum(mm);
+    add('saz',G4,'',`${b(MESL[o[0][1]])} e ${b(MESL[o[1][1]].toLowerCase())} concentram ${b(pc((o[0][0]+o[1][0])/tm))} dos pedidos do ano. ${MESL[o[11][1]]} é o mês mais fraco.`,`Pela data do contato, nos anos completos (${anosC.join(', ')}).`)}
+  const dw=Array(7).fill(0);val.forEach(p=>{if(p.contato)dw[new Date(p.contato+'T12:00').getDay()]++});const td=sum(dw),di=dw.indexOf(Math.max(...dw));
+  if(td>50)add('dia',G4,'',`${b(['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'][di])} é o dia em que mais chegam pedidos: ${b(pc(dw[di]/td))} deles.`,'Pela data do contato em todo o histórico.');
+  // ---- tempo
+  const G5='Tempo de trabalho',hr=TP.map(k=>({k,...horasReais(k)})).filter(x=>x.n);
+  if(hr.length)hr.forEach(x=>{const g=tabela().t[x.k][0]-(+S.precos.custos[x.k].mat||0);add('h'+x.k,G5,'',`Um ${b(TAM[x.k].l)} leva em média ${b(fmtH(x.media))}, o que dá ${b(brl(g/x.media))} por hora.`,`Média de ${x.n} ${x.n==1?'obra cronometrada':'obras cronometradas'}; preço sem moldura menos o material.`,'precos|Abrir os preços')});
+  else add('h0',G5,'',`Ainda não há obras cronometradas.`,'Use o cronômetro na ficha do pedido ou na aba Semana. Com algumas obras medidas, aparece aqui quanto cada tamanho rende por hora.','semana|Ir para a semana');
+  return L}
+function vInsights(){if(!S.pedidos.length)return vazio();const todos=insights(),off=ui.insOff||[],L=todos.filter(x=>!off.includes(x.id)),gs=[...new Set(L.map(x=>x.g))];
+  return `<h1 class="tit">O que os seus números dizem.</h1>
+  <p class="sub" style="margin-top:14px;font-size:17px">${L.length} frases calculadas agora, a partir das suas encomendas. Elas mudam sozinhas conforme você cadastra e entrega. Oculte as que não servem para você.</p>
+  ${gs.map(g=>`<section class="ed"><div><h2>${g}</h2></div><div>${L.filter(x=>x.g===g).map(x=>`<article class="ins ${x.tom}"><p class="frase">${x.t}</p><p class="muted">${x.d}</p><div class="barra" style="margin:10px 0 0">${x.ac?`<button class="btn q s" data-a="ins" data-k="${esc(x.ac.split('|')[0])}">${x.ac.split('|')[1]}</button>`:''}<button class="lk" data-a="insoff" data-k="${x.id}">Ocultar</button></div></article>`).join('')}</div></section>`).join('')}
+  ${todos.length>L.length?`<div class="barra"><button class="btn q s" data-a="inson">Mostrar as ${todos.length-L.length} ocultas</button></div>`:''}`}
 
 /* ============ imagem do pedido (PNG para mandar ao cliente) ============ */
 let fotoObs=true;
@@ -1589,12 +1684,12 @@ return {monta};
 })({get:()=>S.feira,set:v=>{S.feira=v;salvar()}});
 
 /* ============ render e eventos ============ */
-const ABAS=[['geral','Geral'],['enc','Encomendas'],['semana','Semana'],['precos','Preços'],['feira','Feira'],['ajustes','Ajustes']];
+const ABAS=[['geral','Geral'],['enc','Encomendas'],['semana','Semana'],['insights','Insights'],['precos','Preços'],['feira','Feira']];
 function render(anim){const vt=anim&&!ui.leve&&document.startViewTransition&&!matchMedia('(prefers-reduced-motion:reduce)').matches;vt?document.startViewTransition(pinta):pinta()}
 function pinta(){document.body.dataset.aba=ui.aba;document.body.classList.toggle('leve',!!ui.leve);focoFixo='';
   $('#nav').innerHTML=ABAS.map(([k,l])=>`<button data-a="aba" data-k="${k}" ${ui.aba===k?'aria-current="page"':''}>${l}</button>`).join('');
-  $('#app').innerHTML=({geral:vGeral,enc:vEnc,precos:vPrecos,semana:vSemana,feira:()=>'<div id="kit"></div>',ajustes:vAjustes}[ui.aba]||vGeral)();
-  dRua();dPrecos();dSemana();if($('#kit')){$('#kit').classList.toggle('leve',!!ui.leve);Kit.monta($('#kit'))}guardaUi()}
+  $('#app').innerHTML=({geral:vGeral,enc:vEnc,precos:vPrecos,semana:vSemana,insights:vInsights,feira:()=>'<div id="kit"></div>',ajustes:vAjustes}[ui.aba]||vGeral)();
+  dRua();dPrecos();dSemana();tique();$('#aj').setAttribute('aria-pressed',ui.aba==='ajustes');if($('#kit')){$('#kit').classList.toggle('leve',!!ui.leve);Kit.monta($('#kit'))}guardaUi()}
 function fechar(){document.body.classList.remove('g');sel=null;const y=scrollY;render();scrollTo(0,y)}
 const A={
   aba(e){ui.aba=e.dataset.k;render(1);scrollTo(0,0)},
@@ -1612,6 +1707,10 @@ const A={
   set(e){const f=e.dataset.f;sel[f]=sel[f]===e.dataset.k&&f==='tamanho'?'':e.dataset.k;if(f==='andamento'&&sel.andamento==='Entregue'&&!sel.entregue)sel.entregue=HOJE;if(f==='andamento'&&sel.andamento==='Entregue'&&sel.pago==='Sinal')sel._=0;salvar();gaveta()},
   alt(e){const f=e.dataset.f,k=e.dataset.k;sel[f]=sel[f]||[];const i=sel[f].indexOf(k);i<0?sel[f].push(k):sel[f].splice(i,1);salvar();gaveta()},
   usar(e){sel.valor=+e.dataset.k;salvar();gaveta()},
+  cron(e){const p=S.pedidos.find(x=>x.id===e.dataset.id);if(!p)return;if(p.cron)paraCron(p);else{S.pedidos.forEach(paraCron);p.cron=Date.now()}salvar();if(sel)gaveta();else render();tique()},
+  usah(e){const k=e.dataset.k;S.precos.custos[k].h=Math.round(horasReais(k).media*2)/2;salvar();render()},
+  ins(e){const[a,f,t]=e.dataset.k.split(':');ui.aba=a;if(a==='enc'){ui.ver='lista';ui.mes='';ui.busca='';ui.tag=f==='tag'?t:'';ui.filtro=f==='tag'?'todas':f}render(1);scrollTo(0,0)},
+  insoff(e){ui.insOff=[...(ui.insOff||[]),e.dataset.k];render()}, inson(){ui.insOff=[];render()},
   estr(e){S.precos.plano=Object.assign(S.precos.plano||{},{estr:e.dataset.k});salvar();render()},
   avanca(e){const p=S.pedidos.find(x=>x.id===e.dataset.id),i=ETAPAS.indexOf(p.andamento);if(i>=0&&ETAPAS[i+1]){p.andamento=ETAPAS[i+1];salvar();render(1)}},
   entrega(e){const p=S.pedidos.find(x=>x.id===e.dataset.id);p.andamento='Entregue';if(!p.entregue)p.entregue=HOJE;salvar();render(1)},
@@ -1627,6 +1726,15 @@ const A={
   sim(e){ui.sim.t=e.dataset.k;render()}, simb(e){ui.sim[e.dataset.f]=!ui.sim[e.dataset.f];render()},
   async conectar(){const u=$('#purl').value.trim(),k=$('#psen').value.trim(),m=$('#tokm');if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(u)){m.textContent='Cole o link do App da Web, que termina em /exec.';return}if(!k){m.textContent='Digite a senha do script.';return}m.textContent='Conectando…';
     try{await conectar(u,k);render()}catch(err){conta={};m.textContent=err.message+'.'}},
+  forca(){forcar=true;ultErro='';salvar();render()},
+  async descarta(){try{const r=await lerRemoto();if(r.feira==null)r.feira=S.feira;S=r;completa();conta.base=r.updatedAt;guardaConta();localStorage[LS]=JSON.stringify(S);ultErro='';sujo=false;estado('','Salvo na planilha');ui.aba='geral';render()}catch(e){estado('err',e.message)}},
+  async copias(){const c=$('#copias');c.innerHTML='<p class="muted">Buscando…</p>';
+    try{const r=await pedeRemoto('acao=historico');if(!r.copias)throw new Error('O script da planilha é antigo: atualize o Codigo.gs para ter as cópias');
+      c.innerHTML=r.copias.length?r.copias.map(x=>`<div class="fp" style="grid-template-columns:1fr auto"><span><b style="font-size:20px">${esc(x.quando.slice(8,10)+'/'+x.quando.slice(5,7)+' às '+x.quando.slice(11))}</b> <span class="muted">${x.n} encomendas · ${x.tipo==='dia'?'cópia do dia':'antes de uma gravação por cima'}</span></span><button class="btn q s" data-a="restaura1" data-k="${x.linha}">Restaurar</button></div>`).join(''):'<p class="muted">Ainda não há cópias. A primeira é feita amanhã, no primeiro salvamento do dia.</p>'}
+    catch(e){c.innerHTML=`<p class="muted">${esc(e.message)}.</p>`}},
+  restaura1(e){e.outerHTML=`<span><button class="btn p s" data-a="restaura2" data-k="${e.dataset.k}">Trocar tudo por esta cópia</button> <button class="btn q s" data-a="copias">Cancelar</button></span>`},
+  async restaura2(e){const c=$('#copias');c.innerHTML='<p class="muted">Restaurando…</p>';
+    try{const r=await pedeRemoto('acao=restaurar&linha='+e.dataset.k);if(!Array.isArray(r.pedidos))throw new Error('Cópia inválida');S=r;completa();forcar=true;salvar();ui.aba='geral';render()}catch(x){c.innerHTML=`<p class="muted">${esc(x.message)}.</p>`}},
   sair(){conta={};localStorage.removeItem(LSC);estado('off','Salvo neste aparelho');render()},
   csv(){baixar('encomendas-uns-predinhos.csv',csv(),'text/csv;charset=utf-8')},
   json(){baixar('gestao-uns-predinhos-'+HOJE+'.json',JSON.stringify(S),'application/json')}
@@ -1643,7 +1751,7 @@ document.addEventListener('input',ev=>{const e=ev.target,d=e.dataset;
   if(e.id==='reaj'){ui.reaj=+e.value;dPrecos();guardaUi();return}
     if('pressa' in d){S.precos.pressa=+e.value||0;salvar()}});
 document.addEventListener('change',ev=>{const e=ev.target;
-  if(e.id==='imp'&&e.files[0]){const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!Array.isArray(j.pedidos))throw 0;S=Object.assign(PADRAO(),{precos:S.precos,feira:S.feira},j);completa();salvar();ui.aba='geral';render()}catch(x){$('#impm').textContent='Esse arquivo não tem o formato do sistema. Use o JSON de cópia completa ou o encomendas-notion.json.'}};r.readAsText(e.files[0])}});
+  if(e.id==='imp'&&e.files[0]){const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!Array.isArray(j.pedidos))throw 0;S=Object.assign(PADRAO(),{precos:S.precos,feira:S.feira},j);completa();forcar=true;salvar();ui.aba='geral';render()}catch(x){$('#impm').textContent='Esse arquivo não tem o formato do sistema. Use o JSON de cópia completa ou o encomendas-notion.json.'}};r.readAsText(e.files[0])}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#foto')){$('#foto').remove();return}if(e.key==='Escape'&&document.body.classList.contains('g'))fechar();
   if(e.key==='Enter'&&e.target.id==='novatag'&&sel){const t=e.target.value.trim();if(t){sel.tags=sel.tags||[];if(!tem(sel,t))sel.tags.push(t);salvar();gaveta();$('#novatag').focus()}}});
 /* arrastar cartões no quadro */
@@ -1674,7 +1782,7 @@ let rz=0;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(dRua,150)
 /* ============ início ============ */
 if(!S.pedidos.length&&!conta.url)ui.aba='ajustes';
 estado(conta.url?'':'off',conta.url?'Salvo na planilha':'Salvo neste aparelho');
-if(!['geral','enc','semana','precos','feira','ajustes'].includes(ui.aba))ui.aba='geral';
+if(!['geral','enc','semana','insights','precos','feira','ajustes'].includes(ui.aba))ui.aba='geral';
 render();puxar();
 </script>
 </body>
