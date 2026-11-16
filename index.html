@@ -150,7 +150,10 @@ svg text{font-family:var(--txt);fill:var(--cinza);font-size:12px}
 .grupo>h3{font-size:clamp(26px,2.8vw,44px);font-weight:800;font-stretch:80%;display:flex;gap:12px;align-items:baseline;margin-bottom:8px;padding-top:10px;border-top:2px solid var(--tinta)}
 .lin{display:grid;grid-template-columns:20px 48px minmax(120px,1.4fr) minmax(90px,1fr) 150px 130px 100px;gap:12px;align-items:center;width:100%;padding:12px 8px;border-bottom:1px solid var(--linha);transition:background .15s,padding .2s}
 .lin:hover{background:var(--folha);padding-left:16px}
-.lin .n{color:var(--cinza);font-size:13px}.lin .v{text-align:right;font-weight:600}
+.nr{font-family:var(--disp);font-weight:800;color:var(--cobalto);margin-right:.4em;font-variant-numeric:tabular-nums}
+.nr.mo{display:none}
+@media(max-width:820px){.nr.mo{display:inline}}
+.lin .n{font:800 15px var(--disp);color:var(--cobalto)}.lin .v{text-align:right;font-weight:600}
 .lin b{font-family:var(--disp);font-size:17px}
 .etapas{display:flex;gap:3px}.etapas i{height:6px;flex:1;background:var(--linha)}.etapas i.f{background:var(--cobalto)}
 @media(max-width:820px){.lin{grid-template-columns:16px 1fr auto;gap:4px 10px}.lin .n,.lin .et,.lin .ci{display:none}}
@@ -359,6 +362,7 @@ const CORES=['#8FA9F0','#5B7FE8','#1F47D6','#16308F','#111C3A','#B67A12'];
 
 /* ============ visão geral ============ */
 const jc=p=>atrasado(p)?'atr':PAUSA.includes(p.andamento)?'pau':p.prazoFim&&ativo(p)?'ok':'';
+const nr=(p,c='')=>p.n?`<span class="nr ${c}">${p.n}</span>`:'';
 const vtn=p=>`view-transition-name:p-${p.id}`;
 const LEIT='Cada janela é uma encomenda. Passe por cima, toque para abrir.';
 let fatD=[],fatPad=['',''],focoFixo='';
@@ -396,12 +400,12 @@ function vGeral(){
   return `<section id="noite">
     <h1 class="mega"><span class="hot" role="button" tabindex="0" data-foco="and">${ab.length} encomendas</span> na mesa, <span class="hot a" role="button" tabindex="0" data-foco="atr">${at.length} atrasadas</span> e <span class="hot y" role="button" tabindex="0" data-foco="rec">${brl(rec)} a receber.</span></h1>
     <div class="ruab"><p id="leitura">${LEIT}</p><div class="seg n" role="group" aria-label="Organizar a rua">${[['etapa','Por etapa'],['prazo','Por prazo'],['tamanho','Por tamanho']].map(([k,l])=>`<button data-a="modo" data-k="${k}" aria-pressed="${ui.modo===k}">${l}</button>`).join('')}</div></div>
-    <div id="rua" data-foco=""><div id="chao"><div id="predios"></div>${S.pedidos.filter(aberto).map(p=>`<button class="j ${jc(p)} ${falta(p)?'rec':''}" data-a="abrir" data-id="${p.id}" data-l="${esc(`<b>${esc(p.nome)}</b> · ${esc(p.tamanho&&TAM[p.tamanho]?.l||'')} · ${esc(p.andamento)} · ${prazoTxt(p)} · ${brl(p.valor)}${falta(p)?' (falta '+brl(falta(p))+')':''}`)}" aria-label="${esc(p.nome)}" style="${vtn(p)};--d:${300+Math.round(Math.random()*900)}ms"></button>`).join('')}</div></div>
+    <div id="rua" data-foco=""><div id="chao"><div id="predios"></div>${S.pedidos.filter(aberto).map(p=>`<button class="j ${jc(p)} ${falta(p)?'rec':''}" data-a="abrir" data-id="${p.id}" data-l="${esc(`<b>${p.n?'nº '+p.n+' · ':''}${esc(p.nome)}</b> · ${esc(p.tamanho&&TAM[p.tamanho]?.l||'')} · ${esc(p.andamento)} · ${prazoTxt(p)} · ${brl(p.valor)}${falta(p)?' (falta '+brl(falta(p))+')':''}`)}" aria-label="${esc((p.n?'nº '+p.n+' ':'')+p.nome)}" style="${vtn(p)};--d:${300+Math.round(Math.random()*900)}ms"></button>`).join('')}</div></div>
   </section>
   <section class="ed" style="border:0;padding-top:clamp(40px,6vw,90px)"><div><h2>Entrou por mês</h2><div class="giga" id="scn">${fatPad[0]}</div><p class="sub" id="scl" style="margin-top:10px">${fatPad[1]}</p><p class="sub">Deslize sobre as barras. Um toque abre os pedidos do mês.</p></div>
     <div><div id="scrub">${fatD.map((x,i)=>`<i data-a="mes" data-k="${x.k}" data-i="${i}" style="height:${x.v/mxf*100}%"></i>`).join('')}</div><div class="eixo">${fatD.map(x=>`<span>${x.k.slice(5)==='01'?x.k.slice(0,4):x.k.slice(5)==='07'?'jul':''}</span>`).join('')}</div></div></section>
   <section class="ed"><div><h2>Fazer primeiro</h2><p class="sub">As seis com o prazo mais antigo.${pau.length?` Outras ${pau.length} aguardam o cliente e não contam como atraso.`:''}</p></div>
-    <div>${prox.map(p=>`<button class="fp" data-a="abrir" data-id="${p.id}"><span><b>${esc(p.nome)}</b> <span class="muted">${esc(p.tamanho&&TAM[p.tamanho]?.l||'')} · ${esc(p.andamento)}</span></span>${chipPrazo(p)}<span class="num">${brl(p.valor)}</span></button>`).join('')}</div></section>
+    <div>${prox.map(p=>`<button class="fp" data-a="abrir" data-id="${p.id}"><span><b>${nr(p)}${esc(p.nome)}</b> <span class="muted">${esc(p.tamanho&&TAM[p.tamanho]?.l||'')} · ${esc(p.andamento)}</span></span>${chipPrazo(p)}<span class="num">${brl(p.valor)}</span></button>`).join('')}</div></section>
   <section class="ed"><div><h2>Ano a ano</h2><p class="sub">A altura é o valor que entrou. Dentro, pedidos, média por pedido e a espera mediana do contato à entrega.</p></div>
     <div class="anos">${porAno.map(x=>`<div>${(t=>x.v/mxn<.3?`<div style="font-size:13px;line-height:1.35;padding-bottom:8px">${t}</div><div class="col" style="height:${Math.max(2,x.v/mxn*78)}%;padding:0"></div>`:`<div class="col" style="height:${x.v/mxn*78}%">${t}</div>`)(`<b class="num" style="font-size:clamp(15px,1.5vw,22px)">${brl(x.v)}</b><br>${x.n} pedidos<br>média ${brl(x.tk)}<br>${x.esp?Math.round(x.esp)+' dias de espera':''}`)}<div class="giga">${x.a}</div></div>`).join('')}</div></section>
   <section class="ed"><div><h2>O papel que paga as contas</h2><p class="sub">Os tamanhos em escala real entre si. O azul sobe conforme a parte de cada um no valor total.</p></div>
@@ -412,7 +416,7 @@ function vazio(){return `<h1 class="tit">Nenhuma encomenda por aqui ainda.</h1><
 
 /* ============ encomendas ============ */
 function card(p){return `<button class="card" draggable="true" data-a="abrir" data-id="${p.id}" ${aberto(p)?`style="${vtn(p)}"`:''}>
-  <div class="l1"><i class="jn ${p.andamento==='Entregue'?'':jc(p)}"></i><span>${esc(p.nome)}</span><span class="n">${p.n||''}</span></div>
+  <div class="l1"><i class="jn ${p.andamento==='Entregue'?'':jc(p)}"></i><span>${nr(p)}${esc(p.nome)}</span></div>
   <div class="l2">${esc([p.tamanho&&TAM[p.tamanho]?.l,...(p.tags||[]),p.cidade||p.obs].filter(Boolean).join(' · '))}</div>
   <div class="l3">${p.andamento==='Entregue'?`<span class="chip v">${dd(p.entregue)||'entregue'}</span>`:chipPrazo(p)}${p.pago!=='Pago'?chipPago(p):''}<span class="num">${brl(p.valor)}</span></div></button>`}
 function vEnc(){
@@ -440,7 +444,7 @@ function vEnc(){
       (g[k]=g[k]||[]).push(p)});
     const ks=Object.keys(g).sort((a,b)=>a[0]==='z'&&b[0]==='z'?b.localeCompare(a):a.localeCompare(b));
     corpo=ks.map(k=>`<div class="grupo"><h3>${k.split('|')[1]}<span class="muted" style="font:400 14px var(--txt)">${g[k].length} · ${brl(sum(g[k],p=>p.valor))}</span></h3>${g[k].slice(0,k[0]==='z'?60:999).map(p=>{const ei=ETAPAS.indexOf(p.andamento);
-      return `<button class="lin" data-a="abrir" data-id="${p.id}" ${aberto(p)?`style="${vtn(p)}"`:''}><i class="jn ${aberto(p)?jc(p):''}"></i><span class="n num">${p.n||''}</span><span><b>${esc(p.nome)}</b> <span class="muted">${esc([p.tamanho&&TAM[p.tamanho]?.l,...(p.tags||[])].filter(Boolean).join(' · '))}</span></span><span class="muted ci" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.cidade||p.obs)}</span>
+      return `<button class="lin" data-a="abrir" data-id="${p.id}" ${aberto(p)?`style="${vtn(p)}"`:''}><i class="jn ${aberto(p)?jc(p):''}"></i><span class="n num">${p.n||''}</span><span><b>${nr(p,'mo')}${esc(p.nome)}</b> <span class="muted">${esc([p.tamanho&&TAM[p.tamanho]?.l,...(p.tags||[])].filter(Boolean).join(' · '))}</span></span><span class="muted ci" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.cidade||p.obs)}</span>
       <span class="et">${aberto(p)&&ei>=0?`<span class="etapas" data-tip="${p.andamento}">${ETAPAS.map((e,i)=>`<i class="${i<=ei?'f':''}"></i>`).join('')}</span><span class="muted" style="font-size:12px">${p.andamento}</span>`:`<span class="muted">${p.andamento}</span>`}</span>
       <span>${aberto(p)?chipPrazo(p):`<span class="chip">${dd(p.entregue)||'sem data'}</span>`}</span><span class="v num">${brl(p.valor)}${p.pago==='Sinal'?' <span class="chip o">½</span>':''}</span></button>`}).join('')}${k[0]==='z'&&g[k].length>60?`<p class="muted">Mais ${g[k].length-60} na tabela.</p>`:''}</div>`).join('')||'<p class="sub">Nada encontrado com esse filtro.</p>';
   }else{
@@ -581,12 +585,12 @@ function dSemana(){if(ui.aba!=='semana'||!$('#semcorpo'))return;const pl=plano()
   $('#capn').textContent=pl.cap;
   $('#semtit').innerHTML=s0?`Semana de ${semTxt(s0.ini)}: ${s0.itens.length} para pintar.`:'Nada na fila para pintar.';
   const zera=pl.sem.findIndex(s=>s.atr===0),mxa=Math.max(1,...pl.sem.map(s=>s.itens.length));
-  const linha=({p,m},acao)=>{const i=ETAPAS.indexOf(p.andamento),prox=ETAPAS[i+1];return `<div class="fp" style="${vtn(p)}"><button data-a="abrir" data-id="${p.id}"><i class="jn ${jc(p)}"></i><b>${esc(p.nome)}</b> <span class="muted">${esc(p.tamanho&&TAM[p.tamanho]?.l||'')}${tem(p,'Moldura')?' com moldura':''} · ${esc(p.andamento)}${p.cidade?' · '+esc(p.cidade):''}</span></button><span class="chip ${/atrasada/.test(m)?'a':/pressa|Natal/.test(m)?'o':''}">${m}</span>${acao==='entrega'?`<button class="btn q s" data-a="entrega" data-id="${p.id}">Marcar entregue</button>`:`<button class="btn q s" data-a="avanca" data-id="${p.id}">Passar para ${prox}</button>`}</div>`};
+  const linha=({p,m},acao)=>{const i=ETAPAS.indexOf(p.andamento),prox=ETAPAS[i+1];return `<div class="fp" style="${vtn(p)}"><button data-a="abrir" data-id="${p.id}"><i class="jn ${jc(p)}"></i><b>${nr(p)}${esc(p.nome)}</b> <span class="muted">${esc(p.tamanho&&TAM[p.tamanho]?.l||'')}${tem(p,'Moldura')?' com moldura':''} · ${esc(p.andamento)}${p.cidade?' · '+esc(p.cidade):''}</span></button><span class="chip ${/atrasada/.test(m)?'a':/pressa|Natal/.test(m)?'o':''}">${m}</span>${acao==='entrega'?`<button class="btn q s" data-a="entrega" data-id="${p.id}">Marcar entregue</button>`:`<button class="btn q s" data-a="avanca" data-id="${p.id}">Passar para ${prox}</button>`}</div>`};
   $('#semcorpo').innerHTML=(s0?s0.itens.map(x=>linha(x)).join(''):'<p class="sub">Tudo o que estava na fila já foi pintado.</p>')+
     (ent.length?`<h2 style="margin-top:clamp(36px,5vw,64px)">Só falta entregar</h2><p class="sub">Prontas, não ocupam vaga de pintura.</p>${ent.map(p=>linha({p,m:prazoTxt(p)},'entrega')).join('')}`:'')+
     (pl.sem.length>1?`<h2 style="margin-top:clamp(36px,5vw,64px)">As próximas semanas</h2>
     <p class="sub" style="max-width:70ch">${zera<0?'Nesse ritmo os atrasos não zeram dentro do horizonte calculado.':zera===0?'Com a semana atual, nenhuma encomenda da fila fica atrasada.':`Nesse ritmo, a fila de hoje deixa de ter atrasos na semana de ${semTxt(pl.sem[zera].ini)} (${zera+1} semanas) e acaba na semana de ${semTxt(pl.sem[pl.sem.length-1].ini)}.`} A conta só olha para as ${pl.total} encomendas que já estão na fila${r.che>=pl.cap?`; como entram ${r.che.toFixed(1).replace('.',',')} pedidos novos por semana, com ${pl.cap} obras por semana a fila não diminui`:''}.</p>
-    <div class="sems">${pl.sem.map((s,i)=>`<div class="${i===0?'at':''}"><div class="pil" style="height:${mxa*26+8}px">${s.itens.map(({p,m})=>`<button class="jn ${jc(p)}" data-a="abrir" data-id="${p.id}" data-tip="${esc(p.nome+'\n'+(p.tamanho||'')+' · '+p.andamento+'\n'+m)}" aria-label="${esc(p.nome)}"></button>`).join('')}</div><b>${+s.ini.slice(8)} ${MES[+s.ini.slice(5,7)-1]}</b><span class="${s.atr?'':'ok'}">${s.atr?s.atr+' atras.':'em dia'}</span></div>`).join('')}</div>`:'')}
+    <div class="sems">${pl.sem.map((s,i)=>`<div class="${i===0?'at':''}"><div class="pil" style="height:${mxa*26+8}px">${s.itens.map(({p,m})=>`<button class="jn ${jc(p)}" data-a="abrir" data-id="${p.id}" data-tip="${esc((p.n?'nº '+p.n+' · ':'')+p.nome+'\n'+(p.tamanho||'')+' · '+p.andamento+'\n'+m)}" aria-label="${esc(p.nome)}"></button>`).join('')}</div><b>${+s.ini.slice(8)} ${MES[+s.ini.slice(5,7)-1]}</b><span class="${s.atr?'':'ok'}">${s.atr?s.atr+' atras.':'em dia'}</span></div>`).join('')}</div>`:'')}
 
 /* ============ imagem do pedido (PNG para mandar ao cliente) ============ */
 let fotoObs=true;
