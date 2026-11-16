@@ -231,6 +231,15 @@ body[data-aba=feira],body[data-aba=feira] #top{background:#ECEEE6}
 body.kmf{overflow:hidden}body.kmf nav,body.kmf #top{display:none}
 @page{size:A4;margin:10mm}
 @media print{body{background:#fff!important}#top,nav,#gav,#veu,#tip,#cur,#foto{display:none!important}main{padding:0!important}#kit{margin:0}}
+/* modo leve */
+body.leve *,body.leve *::before,body.leve *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+body.leve #cur{display:none!important}
+body.leve nav,body.leve #foto img{box-shadow:none}
+body.leve .card:hover{transform:none;box-shadow:inset 0 0 0 2px var(--tinta)}
+body.leve .btn:hover,body.leve .fo:hover .fs{transform:none}
+body.leve .j:hover,body.leve .j:focus-visible{box-shadow:0 0 0 3px #fff}
+body.leve #scrub i.on{transform:none}
+body.leve .lin:hover,body.leve .fp:hover{padding-left:8px}
 /* transições entre páginas */
 ::view-transition-group(*){animation-duration:.55s;animation-timing-function:cubic-bezier(.2,.9,.2,1)}
 ::view-transition-old(root){animation:.25s both vsai}::view-transition-new(root){animation:.45s .05s both ventra}
@@ -281,7 +290,7 @@ const PADRAO=()=>({v:1,updatedAt:0,feira:null,pedidos:[],
     custos:Object.fromEntries(TP.map(k=>[k,{mat:0,mold:0,h:0}])),pressa:20,ipca:0},
   feiras:[],prints:[]});
 const LS='up-gestao', LSC='up-gestao-planilha', LSU='up-gestao-ui';
-let S=PADRAO(), conta={}, ui={tag:'',modo:'etapa',aba:'geral',ver:'quadro',filtro:'abertas',busca:'',ord:'n',desc:true,pausa:false,mes:'',moldura:false,reaj:0,feira:'',sim:{t:'A4',mold:false,pressa:false,px:1}};
+let S=PADRAO(), conta={}, ui={leve:false,tag:'',modo:'etapa',aba:'geral',ver:'quadro',filtro:'abertas',busca:'',ord:'n',desc:true,pausa:false,mes:'',moldura:false,reaj:0,feira:'',sim:{t:'A4',mold:false,pressa:false,px:1}};
 try{S=Object.assign(PADRAO(),JSON.parse(localStorage[LS]||'{}'))}catch(e){}
 try{conta=JSON.parse(localStorage[LSC]||'{}')}catch(e){}
 try{Object.assign(ui,JSON.parse(localStorage[LSU]||'{}'))}catch(e){}
@@ -450,7 +459,7 @@ function vEnc(){
   }else{
     const C=[['n','nº'],['nome','Nome'],['andamento','Andamento'],['tamanho','Tamanho'],['tecnicas','Técnica'],['cidade','Cidade'],['contato','Contato'],['prazoFim','Prazo'],['entregue','Entregue'],['pago','Pago'],['valor','Valor']];
     const s=[...ps].sort((a,b)=>{const x=a[ui.ord],y=b[ui.ord];const c=typeof x==='number'?x-y:String(x||'').localeCompare(String(y||''),'pt');return ui.desc?-c:c});
-    corpo=`<p class="sub">${s.length} encomendas · ${brl(sum(s,p=>p.valor))} · ${brl(sum(s,falta))} a receber</p><div class="tw"><table><thead><tr>${C.map(([k,l])=>`<th data-a="ord" data-k="${k}" class="${k==='valor'?'r':''}">${l}${ui.ord===k?(ui.desc?' ↓':' ↑'):''}</th>`).join('')}</tr></thead><tbody>${s.map(p=>`<tr data-a="abrir" data-id="${p.id}"><td class="num">${p.n||''}</td><td><b>${esc(p.nome)}</b></td><td>${atrasado(p)?'<span class="chip a">'+p.andamento+'</span>':p.andamento}</td><td>${esc(p.tamanho&&TAM[p.tamanho]?.l||'')}${tem(p,'Moldura')?' + moldura':''}</td><td>${esc((p.tecnicas||[]).join(', '))}</td><td>${esc(p.cidade)}</td><td>${dd(p.contato)}</td><td>${dd(p.prazoFim)}</td><td>${dd(p.entregue)}</td><td>${chipPago(p)}</td><td class="r num">${brl(p.valor)}</td></tr>`).join('')}</tbody></table></div>`;
+    corpo=`<p class="sub">${s.length} encomendas · ${brl(sum(s,p=>p.valor))} · ${brl(sum(s,falta))} a receber</p><div class="tw"><table><thead><tr>${C.map(([k,l])=>`<th data-a="ord" data-k="${k}" class="${k==='valor'?'r':''}">${l}${ui.ord===k?(ui.desc?' ↓':' ↑'):''}</th>`).join('')}</tr></thead><tbody>${s.slice(0,ui.leve?150:1e9).map(p=>`<tr data-a="abrir" data-id="${p.id}"><td class="num">${p.n||''}</td><td><b>${esc(p.nome)}</b></td><td>${atrasado(p)?'<span class="chip a">'+p.andamento+'</span>':p.andamento}</td><td>${esc(p.tamanho&&TAM[p.tamanho]?.l||'')}${tem(p,'Moldura')?' + moldura':''}</td><td>${esc((p.tecnicas||[]).join(', '))}</td><td>${esc(p.cidade)}</td><td>${dd(p.contato)}</td><td>${dd(p.prazoFim)}</td><td>${dd(p.entregue)}</td><td>${chipPago(p)}</td><td class="r num">${brl(p.valor)}</td></tr>`).join('')}</tbody></table></div>${ui.leve&&s.length>150?`<p class="sub" style="margin-top:10px">Modo leve: mostrando 150 de ${s.length}. Use a busca, as tags ou os filtros para chegar nas outras.</p>`:''}`;
   }
   return cab+corpo}
 
@@ -546,6 +555,8 @@ function vAjustes(){return `<h1 class="tit">Onde os dados moram.</h1>
   <section class="folha"><h2>Planilha e cópia de segurança</h2><p class="sub">Baixe as encomendas como arquivo CSV (abre no Excel e no Numbers) ou a cópia completa em JSON. Importar substitui os dados atuais pelo arquivo escolhido.</p>
     <div class="barra"><button class="btn q" data-a="csv">Baixar planilha</button><button class="btn q" data-a="json">Baixar cópia completa</button><label class="btn q" style="cursor:pointer">Importar arquivo JSON<input type="file" id="imp" accept=".json,application/json" hidden></label></div>
     <p class="muted" id="impm">${S.pedidos.length} encomendas guardadas.</p>
+    <div class="campo"><span>Desempenho neste aparelho</span><div class="seg"><button data-a="leve" data-k="" aria-pressed="${!ui.leve}">Completo</button><button data-a="leve" data-k="1" aria-pressed="${!!ui.leve}">Modo leve</button></div>
+      <p class="muted" style="margin:8px 0 0;font-size:14px">O modo leve desliga animações, transições entre telas, o cursor redondo e sombras, e encurta a tabela. Vale só para este aparelho.</p></div>
     <label class="campo" style="max-width:220px"><span>Taxa de pressa (%)</span><input type="number" data-pressa value="${S.precos.pressa}"></label></section></div>`}
 function baixar(nome,txt,tipo){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:tipo}));a.download=nome;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
 function csv(){const C=['n','nome','andamento','tamanho','tecnicas','tags','cidade','obs','contato','prazoIni','prazoFim','entregue','pago','pgto','valor'];
@@ -948,6 +959,9 @@ details.etapa ol{margin:0 0 18px;padding-left:calc(1.4em + 14px + 1.1em);display
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 
 /* ajustes para viver dentro do sistema de gestão */
+:host(.leve) *,:host(.leve) *::before,:host(.leve) *::after{animation:none!important;transition:none!important}
+:host(.leve) .kroot{background-image:none}
+:host(.leve) .nav{box-shadow:none}
 .kroot{padding:0 0 24px;min-height:70vh}
 .nav{position:static;transform:none;margin:14px auto 0;width:max-content;box-shadow:none}
 .res{top:62px}
@@ -1071,7 +1085,7 @@ const CHECK_PADRAO={
 
 /* ============================ estado ============================ */
 const KEY='kit-de-feira-v1';
-const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 let uid=Date.now();
 const novoId=()=>++uid;
 function padrao(){
@@ -1568,7 +1582,7 @@ function ouveClick(e){
   else if(a==='imprime'){$('#folha').innerHTML=folhaMat();try{window.print()}catch(e){}return}
   salva();atualiza();
 }
-function monta(el){root=el.attachShadow({mode:'open'});root.innerHTML='<style>'+CSS+'</style><div class="kroot">'+HTML+'</div>';S=carrega();ultPreco=null;ctSig='';document.body.classList.remove('kmf');
+function monta(el){RM=matchMedia('(prefers-reduced-motion:reduce)').matches||el.classList.contains('leve');root=el.attachShadow({mode:'open'});root.innerHTML='<style>'+CSS+'</style><div class="kroot">'+HTML+'</div>';S=carrega();ultPreco=null;ctSig='';document.body.classList.remove('kmf');
   montaPreco();montaVale();montaCheck();montaEstoque();montaCaixa();montaDiario();montaAgenda();montaCt();montaMat();montaGuia();montaDicas();montaForn();
   root.addEventListener('input',ouveInput);root.addEventListener('click',ouveClick);rota(vista)}
 return {monta};
@@ -1576,11 +1590,11 @@ return {monta};
 
 /* ============ render e eventos ============ */
 const ABAS=[['geral','Geral'],['enc','Encomendas'],['semana','Semana'],['precos','Preços'],['feira','Feira'],['ajustes','Ajustes']];
-function render(anim){const vt=anim&&document.startViewTransition&&!matchMedia('(prefers-reduced-motion:reduce)').matches;vt?document.startViewTransition(pinta):pinta()}
-function pinta(){document.body.dataset.aba=ui.aba;focoFixo='';
+function render(anim){const vt=anim&&!ui.leve&&document.startViewTransition&&!matchMedia('(prefers-reduced-motion:reduce)').matches;vt?document.startViewTransition(pinta):pinta()}
+function pinta(){document.body.dataset.aba=ui.aba;document.body.classList.toggle('leve',!!ui.leve);focoFixo='';
   $('#nav').innerHTML=ABAS.map(([k,l])=>`<button data-a="aba" data-k="${k}" ${ui.aba===k?'aria-current="page"':''}>${l}</button>`).join('');
   $('#app').innerHTML=({geral:vGeral,enc:vEnc,precos:vPrecos,semana:vSemana,feira:()=>'<div id="kit"></div>',ajustes:vAjustes}[ui.aba]||vGeral)();
-  dRua();dPrecos();dSemana();if($('#kit'))Kit.monta($('#kit'));guardaUi()}
+  dRua();dPrecos();dSemana();if($('#kit')){$('#kit').classList.toggle('leve',!!ui.leve);Kit.monta($('#kit'))}guardaUi()}
 function fechar(){document.body.classList.remove('g');sel=null;const y=scrollY;render();scrollTo(0,y)}
 const A={
   aba(e){ui.aba=e.dataset.k;render(1);scrollTo(0,0)},
@@ -1601,6 +1615,7 @@ const A={
   estr(e){S.precos.plano=Object.assign(S.precos.plano||{},{estr:e.dataset.k});salvar();render()},
   avanca(e){const p=S.pedidos.find(x=>x.id===e.dataset.id),i=ETAPAS.indexOf(p.andamento);if(i>=0&&ETAPAS[i+1]){p.andamento=ETAPAS[i+1];salvar();render(1)}},
   entrega(e){const p=S.pedidos.find(x=>x.id===e.dataset.id);p.andamento='Entregue';if(!p.entregue)p.entregue=HOJE;salvar();render(1)},
+  leve(e){ui.leve=!!e.dataset.k;render()},
   foto(){foto()}, fotoobs(){fotoObs=!fotoObs;foto()}, fotofecha(){$('#foto')?.remove()},
   apagar1(){$('#apagar').innerHTML='<span class="muted">Apagar de vez? </span><button class="btn p s" data-a="apagar2">Sim, apagar</button> <button class="btn q s" data-a="reabrir">Manter</button>'},
   reabrir(){gaveta()},
