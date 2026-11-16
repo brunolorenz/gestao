@@ -264,6 +264,12 @@ body.kmf{overflow:hidden}body.kmf nav,body.kmf #top{display:none}
 body.certon{overflow:hidden}body.certon nav{display:none}
 @media(max-width:900px){.certg{grid-template-columns:1fr}.certp{position:static}}
 body.leve #certcv{box-shadow:0 0 0 1px var(--linha)}
+body[data-aba=porta] nav,body[data-aba=porta] #dir{display:none}
+body[data-aba=porta],body[data-aba=porta] #top{background:var(--tinta);color:var(--papel)}
+body[data-aba=porta] #marca i{color:var(--luz)}
+#porta{min-height:calc(100svh - 180px);display:flex;flex-direction:column;justify-content:center;padding:30px 0}
+#porta .campo>span{color:var(--lavado)}#porta .campo input{color:#fff;border-bottom-color:#ffffff66}#porta .campo input:focus{border-color:var(--luz)}
+#porta .btn{background:var(--luz);color:var(--tinta)}
 /* modo leve */
 body.leve *,body.leve *::before,body.leve *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 body.leve #cur{display:none!important}
@@ -590,7 +596,7 @@ function dPrecos(){if(ui.aba!=='precos'||!$('#folhas'))return;const t=tabela(),m
 function vAjustes(){return `<h1 class="tit">Onde os dados moram.</h1>
   <div class="grade c2" style="margin-top:24px">
   <section class="folha"><h2>Planilha do Google</h2>
-    ${conta.url?`<p class="sub">Conectado. As encomendas ficam na aba Encomendas da sua planilha e cada alteração é enviada sozinha. Para usar em outro aparelho, abra esta página nele e cole o mesmo link e a mesma senha.</p>${ultErro?`<p class="sub" style="color:var(--alizarina)">${esc(ultErro)}. Isso protege a base contra um aparelho desatualizado.</p><div class="barra"><button class="btn" data-a="descarta">Usar a versão da planilha</button><button class="btn q" data-a="forca">Gravar a deste aparelho mesmo assim</button></div>`:''}<p class="sub" id="scriptv">Conferindo a versão do script da planilha…</p><button class="btn q" data-a="sair">Desconectar este aparelho</button>
+    ${conta.url?`<p class="sub">Conectado. As encomendas ficam na aba Encomendas da sua planilha e cada alteração é enviada sozinha. Para usar em outro aparelho, abra esta página nele e cole o mesmo link e a mesma senha.</p>${ultErro?`<p class="sub" style="color:var(--alizarina)">${esc(ultErro)}. Isso protege a base contra um aparelho desatualizado.</p><div class="barra"><button class="btn" data-a="descarta">Usar a versão da planilha</button><button class="btn q" data-a="forca">Gravar a deste aparelho mesmo assim</button></div>`:''}<p class="sub" id="scriptv">Conferindo a versão do script da planilha…</p><button class="btn q" data-a="sair">Sair e apagar os dados deste aparelho</button>
       <h2 style="margin-top:30px">Cópias de segurança</h2><p class="sub">A planilha guarda sozinha uma cópia no primeiro salvamento de cada dia (as 7 últimas) e outra quando um aparelho grava por cima de algo que não tinha visto. Ficam na aba Histórico.</p><div id="copias"><button class="btn q" data-a="copias">Ver as cópias</button></div>`
     :`<p class="sub">Cole o link do App da Web publicado na sua planilha (termina em /exec) e a senha que você definiu no script. Os dois ficam guardados só neste aparelho.</p>
       <label class="campo"><span>Link do App da Web</span><input type="url" id="purl" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec"></label>
@@ -1800,8 +1806,17 @@ function baixaBlob(nome,blob){const a=document.createElement('a');a.href=URL.cre
 
 /* ============ render e eventos ============ */
 const ABAS=[['geral','Geral'],['enc','Encomendas'],['semana','Semana'],['insights','Insights'],['precos','Preços'],['feira','Feira']];
-function render(anim){const vt=anim&&!ui.leve&&document.startViewTransition&&!matchMedia('(prefers-reduced-motion:reduce)').matches;vt?document.startViewTransition(pinta):pinta()}
-function pinta(){document.body.dataset.aba=ui.aba;document.body.classList.toggle('leve',!!ui.leve);focoFixo='';
+function render(anim){const vt=anim&&!ui.leve&&document.startViewTransition&&!matchMedia('(prefers-reduced-motion:reduce)').matches;if(!vt)return pinta();
+  // se o navegador demorar a iniciar a transição (aba em segundo plano, página ainda carregando), troca a tela assim mesmo
+  let feito=false;const f=()=>{if(!feito){feito=true;pinta()}};try{document.startViewTransition(f)}catch(e){f()}setTimeout(f,300)}
+function porta(){return `<section id="porta"><h1 class="mega">Área de trabalho de Bruno Lorenz.</h1>
+  <p style="max-width:44ch;color:var(--lavado);font-size:17px;margin:22px 0 0">Esta página é de uso interno. Para entrar, informe o link e a senha.</p>
+  <div style="max-width:520px;margin-top:34px"><label class="campo"><span>Link</span><input type="url" id="purl" autocomplete="off"></label>
+    <label class="campo"><span>Senha</span><input type="password" id="psen" autocomplete="current-password"></label>
+    <button class="btn" style="margin-top:22px" data-a="conectar">Entrar</button> <span id="tokm" style="color:var(--lavado);margin-left:10px"></span></div></section>`}
+function pinta(){document.body.classList.toggle('leve',!!ui.leve);
+  if(!conta.url){document.body.dataset.aba='porta';$('#nav').innerHTML='';$('#app').innerHTML=porta();return}
+  document.body.dataset.aba=ui.aba;focoFixo='';
   $('#nav').innerHTML=ABAS.map(([k,l])=>`<button data-a="aba" data-k="${k}" ${ui.aba===k?'aria-current="page"':''}>${l}</button>`).join('');
   $('#app').innerHTML=({geral:vGeral,enc:vEnc,precos:vPrecos,semana:vSemana,insights:vInsights,feira:()=>'<div id="kit"></div>',ajustes:vAjustes}[ui.aba]||vGeral)();
   dRua();dPrecos();dSemana();tique();confereScript();$('#aj').setAttribute('aria-pressed',ui.aba==='ajustes');if($('#kit')){$('#kit').classList.toggle('leve',!!ui.leve);Kit.monta($('#kit'))}guardaUi()}
@@ -1848,8 +1863,8 @@ const A={
   aplicar(){const t=tabela(),f=1+ui.reaj/100,nt=Object.fromEntries(TP.map(k=>[k,t.t[k].map(v=>arred(v*f))]));
     if(t.data===HOJE)t.t=nt;else S.precos.versoes.push({data:HOJE,t:nt});S.precos.ipca=0;ui.reaj=0;salvar();render()},
   sim(e){ui.sim.t=e.dataset.k;render()}, simb(e){ui.sim[e.dataset.f]=!ui.sim[e.dataset.f];render()},
-  async conectar(){const u=$('#purl').value.trim(),k=$('#psen').value.trim(),m=$('#tokm');if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(u)){m.textContent='Cole o link do App da Web, que termina em /exec.';return}if(!k){m.textContent='Digite a senha do script.';return}m.textContent='Conectando…';
-    try{await conectar(u,k);render()}catch(err){conta={};m.textContent=err.message+'.'}},
+  async conectar(){const u=$('#purl').value.trim(),k=$('#psen').value.trim(),m=$('#tokm');if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(u)){m.textContent='Link inválido.';return}if(!k){m.textContent='Digite a senha.';return}m.textContent='Conectando…';
+    try{await conectar(u,k);ui.aba=S.pedidos.length?'geral':'ajustes';render()}catch(err){conta={};m.textContent=/senha/i.test(err.message)?'Senha incorreta.':'Não foi possível entrar. Confira o link e a senha.'}},
   forca(){forcar=true;ultErro='';salvar();render()},
   async descarta(){try{const r=await lerRemoto();if(r.feira==null)r.feira=S.feira;S=r;completa();conta.base=r.updatedAt;guardaConta();localStorage[LS]=JSON.stringify(S);ultErro='';sujo=false;estado('','Salvo na planilha');ui.aba='geral';render()}catch(e){estado('err',e.message)}},
   async copias(){const c=$('#copias');c.innerHTML='<p class="muted">Buscando…</p>';
@@ -1859,7 +1874,7 @@ const A={
   restaura1(e){e.outerHTML=`<span><button class="btn p s" data-a="restaura2" data-k="${e.dataset.k}">Trocar tudo por esta cópia</button> <button class="btn q s" data-a="copias">Cancelar</button></span>`},
   async restaura2(e){const c=$('#copias');c.innerHTML='<p class="muted">Restaurando…</p>';
     try{const r=await pedeRemoto('acao=restaurar&linha='+e.dataset.k);if(!Array.isArray(r.pedidos))throw new Error('Cópia inválida');S=r;completa();forcar=true;salvar();ui.aba='geral';render()}catch(x){c.innerHTML=`<p class="muted">${esc(x.message)}.</p>`}},
-  sair(){conta={};localStorage.removeItem(LSC);estado('off','Salvo neste aparelho');render()},
+  sair(){if(sujo||enviando){estado('busy','Aguarde terminar de salvar e tente de novo');return}conta={};S=PADRAO();completa();localStorage.removeItem(LSC);localStorage.removeItem(LS);render()},
   csv(){baixar('encomendas-uns-predinhos.csv',csv(),'text/csv;charset=utf-8')},
   json(){baixar('gestao-uns-predinhos-'+HOJE+'.json',JSON.stringify(S),'application/json')}
 };
@@ -1911,7 +1926,6 @@ document.addEventListener('click',e=>{const h=e.target.closest?.('[data-foco].ho
 if(matchMedia('(hover:hover) and (pointer:fine)').matches){const c=$('#cur');c.style.display='block';addEventListener('pointermove',e=>{c.style.transform=`translate(${e.clientX}px,${e.clientY}px)`},{passive:true})}
 let rz=0;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(dRua,150)});
 /* ============ início ============ */
-if(!S.pedidos.length&&!conta.url)ui.aba='ajustes';
 estado(conta.url?'':'off',conta.url?'Salvo na planilha':'Salvo neste aparelho');
 if(!['geral','enc','semana','insights','precos','feira','ajustes'].includes(ui.aba))ui.aba='geral';
 render();puxar();
