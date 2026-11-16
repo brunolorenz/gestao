@@ -130,7 +130,7 @@ svg text{font-family:var(--txt);fill:var(--cinza);font-size:12px}
 .cid{display:flex;flex-wrap:wrap;gap:4px 22px;align-items:baseline;font-family:var(--disp);font-weight:800;font-stretch:80%;letter-spacing:-.03em;line-height:1}
 .cid sup{font:500 12px var(--txt);color:var(--cobalto);margin-left:3px;letter-spacing:0}
 /* quadro */
-#quadro{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(260px,1fr);gap:clamp(12px,1.6vw,26px);overflow-x:auto;padding-bottom:12px;scroll-snap-type:x proximity;align-items:start}
+#quadro{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(200px,1fr);gap:clamp(10px,1.2vw,20px);overflow-x:auto;padding-bottom:12px;scroll-snap-type:x proximity;align-items:start}
 .col{scroll-snap-align:start;min-height:160px;border-top:2px solid var(--tinta);padding-top:10px;transition:background .15s}
 .col.sobre{background:var(--ceu)}
 .col header{display:flex;flex-wrap:wrap;gap:2px 10px;justify-content:space-between;align-items:baseline;padding:0 0 12px}
@@ -249,6 +249,10 @@ body.kmf{overflow:hidden}body.kmf nav,body.kmf #top{display:none}
 .ins .frase b{font-weight:800;color:var(--cobalto)}
 .ins.a .frase b{color:var(--alizarina)}.ins.v .frase b{color:var(--viridian)}
 .ins .muted{margin:0;max-width:62ch;font-size:15px}
+.chip.u{background:var(--tinta);color:var(--luz);font-weight:700}
+.card.urg{box-shadow:inset 0 4px 0 var(--tinta)}
+.j.urg{outline:2px solid #fff;outline-offset:2px}
+#noite .chip.u{background:var(--luz);color:var(--tinta)}
 /* modo leve */
 body.leve *,body.leve *::before,body.leve *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 body.leve #cur{display:none!important}
@@ -358,6 +362,8 @@ function prazoTxt(p){if(!p.prazoFim)return 'sem prazo';const d=dias(HOJE,p.prazo
   if(d<0){const a=-d;return 'atrasada '+(a>=60?Math.round(a/30)+' meses':a+(a==1?' dia':' dias'))}
   return d===0?'vence hoje':'faltam '+(d>=60?Math.round(d/30)+' meses':d+(d==1?' dia':' dias'))}
 const chipPrazo=p=>`<span class="chip ${atrasado(p)?'a':''}">${prazoTxt(p)}</span>`;
+const urgente=p=>aberto(p)&&(p.tags||[]).find(t=>/pressa|anivers/i.test(t));
+const chipU=p=>{const t=urgente(p);return t?`<span class="chip u">${/pressa/i.test(t)?'Pressa':'Aniversário'}</span>`:''};
 const chipPago=p=>p.pago==='Pago'?'<span class="chip v">pago</span>':p.pago==='Sinal'?'<span class="chip o">sinal</span>':'<span class="chip a">não pago</span>';
 function todasTags(){const c={};S.pedidos.forEach(p=>(p.tags||[]).forEach(t=>c[t]=(c[t]||0)+1));return Object.entries(c).sort((a,b)=>b[1]-a[1])}
 function tabela(){return S.precos.versoes[S.precos.versoes.length-1]}
@@ -427,16 +433,16 @@ function vGeral(){
   const mxn=Math.max(1,...porAno.map(x=>x.v));
   const tams=Object.keys(TAM).map(k=>({k,n:val.filter(p=>p.tamanho===k).length,v:sum(val.filter(p=>p.tamanho===k),p=>p.valor)})).filter(x=>x.n);const tv=sum(tams,x=>x.v)||1,mxt=Math.max(...tams.map(x=>x.v));
   const cid={};val.forEach(p=>{const c=(p.cidade||'').split(',')[0].trim();if(c.length>2)cid[c]=(cid[c]||0)+1});const tc=Object.entries(cid).sort((a,b)=>b[1]-a[1]).slice(0,14);
-  const prox=[...ab].sort((a,b)=>(a.prazoFim||'9').localeCompare(b.prazoFim||'9')).slice(0,6);
+  const prox=[...ab].sort((a,b)=>(urgente(b)?1:0)-(urgente(a)?1:0)||(a.prazoFim||'9').localeCompare(b.prazoFim||'9')).slice(0,6);
   return `<section id="noite">
     <h1 class="mega"><span class="hot" role="button" tabindex="0" data-foco="and">${ab.length} encomendas</span> na mesa, <span class="hot a" role="button" tabindex="0" data-foco="atr">${at.length} atrasadas</span> e <span class="hot y" role="button" tabindex="0" data-foco="rec">${brl(rec)} a receber.</span></h1>
     <div class="ruab"><p id="leitura">${LEIT}</p><div class="seg n" role="group" aria-label="Organizar a rua">${[['etapa','Por etapa'],['prazo','Por prazo'],['tamanho','Por tamanho']].map(([k,l])=>`<button data-a="modo" data-k="${k}" aria-pressed="${ui.modo===k}">${l}</button>`).join('')}</div></div>
-    <div id="rua" data-foco=""><div id="chao"><div id="predios"></div>${S.pedidos.filter(aberto).map(p=>`<button class="j ${jc(p)} ${falta(p)?'rec':''}" data-a="abrir" data-id="${p.id}" data-l="${esc(`<b>${p.n?'nº '+p.n+' · ':''}${esc(p.nome)}</b> · ${esc(p.tamanho&&TAM[p.tamanho]?.l||'')} · ${esc(p.andamento)} · ${prazoTxt(p)} · ${brl(p.valor)}${falta(p)?' (falta '+brl(falta(p))+')':''}`)}" aria-label="${esc((p.n?'nº '+p.n+' ':'')+p.nome)}" style="${vtn(p)};--d:${300+Math.round(Math.random()*900)}ms"></button>`).join('')}</div></div>
+    <div id="rua" data-foco=""><div id="chao"><div id="predios"></div>${S.pedidos.filter(aberto).map(p=>`<button class="j ${jc(p)} ${falta(p)?'rec':''} ${urgente(p)?'urg':''}" data-a="abrir" data-id="${p.id}" data-l="${esc(`<b>${p.n?'nº '+p.n+' · ':''}${esc(p.nome)}</b> · ${esc(p.tamanho&&TAM[p.tamanho]?.l||'')} · ${esc(p.andamento)} · ${prazoTxt(p)} · ${brl(p.valor)}${falta(p)?' (falta '+brl(falta(p))+')':''}`)}" aria-label="${esc((p.n?'nº '+p.n+' ':'')+p.nome)}" style="${vtn(p)};--d:${300+Math.round(Math.random()*900)}ms"></button>`).join('')}</div></div>
   </section>
   <section class="ed" style="border:0;padding-top:clamp(40px,6vw,90px)"><div><h2>Entrou por mês</h2><div class="giga" id="scn">${fatPad[0]}</div><p class="sub" id="scl" style="margin-top:10px">${fatPad[1]}</p><p class="sub">Deslize sobre as barras. Um toque abre os pedidos do mês.</p></div>
     <div><div id="scrub">${fatD.map((x,i)=>`<i data-a="mes" data-k="${x.k}" data-i="${i}" style="height:${x.v/mxf*100}%"></i>`).join('')}</div><div class="eixo">${fatD.map(x=>`<span>${x.k.slice(5)==='01'?x.k.slice(0,4):x.k.slice(5)==='07'?'jul':''}</span>`).join('')}</div></div></section>
-  <section class="ed"><div><h2>Fazer primeiro</h2><p class="sub">As seis com o prazo mais antigo.${pau.length?` Outras ${pau.length} aguardam o cliente e não contam como atraso.`:''}</p></div>
-    <div>${prox.map(p=>`<button class="fp" data-a="abrir" data-id="${p.id}"><span><b>${nr(p)}${esc(p.nome)}</b> <span class="muted">${esc(p.tamanho&&TAM[p.tamanho]?.l||'')} · ${esc(p.andamento)}</span></span>${chipPrazo(p)}<span class="num">${brl(p.valor)}</span></button>`).join('')}</div></section>
+  <section class="ed"><div><h2>Fazer primeiro</h2><p class="sub">Primeiro as de Pressa e Aniversário, depois as de prazo mais antigo.${pau.length?` Outras ${pau.length} aguardam o cliente e não contam como atraso.`:''}</p></div>
+    <div>${prox.map(p=>`<button class="fp" data-a="abrir" data-id="${p.id}"><span><b>${nr(p)}${esc(p.nome)}</b> ${chipU(p)} <span class="muted">${esc(p.tamanho&&TAM[p.tamanho]?.l||'')} · ${esc(p.andamento)}</span></span>${chipPrazo(p)}<span class="num">${brl(p.valor)}</span></button>`).join('')}</div></section>
   <section class="ed"><div><h2>Ano a ano</h2><p class="sub">A altura é o valor que entrou. Dentro, pedidos, média por pedido e a espera mediana do contato à entrega.</p></div>
     <div class="anos">${porAno.map(x=>`<div>${(t=>x.v/mxn<.3?`<div style="font-size:13px;line-height:1.35;padding-bottom:8px">${t}</div><div class="col" style="height:${Math.max(2,x.v/mxn*78)}%;padding:0"></div>`:`<div class="col" style="height:${x.v/mxn*78}%">${t}</div>`)(`<b class="num" style="font-size:clamp(15px,1.5vw,22px)">${brl(x.v)}</b><br>${x.n} pedidos<br>média ${brl(x.tk)}<br>${x.esp?Math.round(x.esp)+' dias de espera':''}`)}<div class="giga">${x.a}</div></div>`).join('')}</div></section>
   <section class="ed"><div><h2>O papel que paga as contas</h2><p class="sub">Os tamanhos em escala real entre si. O azul sobe conforme a parte de cada um no valor total.</p></div>
@@ -446,10 +452,10 @@ function vGeral(){
 function vazio(){return `<h1 class="tit">Nenhuma encomenda por aqui ainda.</h1><p class="sub" style="margin-top:14px;font-size:17px">Importe o arquivo com o histórico do Notion ou cadastre a primeira encomenda.</p><div class="barra"><button class="btn" data-a="aba" data-k="ajustes">Importar dados</button><button class="btn q" data-a="nova">Nova encomenda</button></div>`}
 
 /* ============ encomendas ============ */
-function card(p){return `<button class="card" draggable="true" data-a="abrir" data-id="${p.id}" ${aberto(p)?`style="${vtn(p)}"`:''}>
+function card(p){return `<button class="card ${urgente(p)?'urg':''}" draggable="true" data-a="abrir" data-id="${p.id}" ${aberto(p)?`style="${vtn(p)}"`:''}>
   <div class="l1"><i class="jn ${p.andamento==='Entregue'?'':jc(p)}"></i><span>${nr(p)}${esc(p.nome)}</span></div>
   <div class="l2">${esc([p.tamanho&&TAM[p.tamanho]?.l,...(p.tags||[]),p.cidade||p.obs].filter(Boolean).join(' · '))}</div>
-  <div class="l3">${p.andamento==='Entregue'?`<span class="chip v">${dd(p.entregue)||'entregue'}</span>`:chipPrazo(p)}${p.pago!=='Pago'?chipPago(p):''}<span class="num">${brl(p.valor)}</span></div></button>`}
+  <div class="l3">${chipU(p)}${p.andamento==='Entregue'?`<span class="chip v">${dd(p.entregue)||'entregue'}</span>`:chipPrazo(p)}${p.pago!=='Pago'?chipPago(p):''}<span class="num">${brl(p.valor)}</span></div></button>`}
 function vEnc(){
   if(!S.pedidos.length)return vazio();
   const ps=filtrados();
@@ -475,13 +481,13 @@ function vEnc(){
       (g[k]=g[k]||[]).push(p)});
     const ks=Object.keys(g).sort((a,b)=>a[0]==='z'&&b[0]==='z'?b.localeCompare(a):a.localeCompare(b));
     corpo=ks.map(k=>`<div class="grupo"><h3>${k.split('|')[1]}<span class="muted" style="font:400 14px var(--txt)">${g[k].length} · ${brl(sum(g[k],p=>p.valor))}</span></h3>${g[k].slice(0,k[0]==='z'?60:999).map(p=>{const ei=ETAPAS.indexOf(p.andamento);
-      return `<button class="lin" data-a="abrir" data-id="${p.id}" ${aberto(p)?`style="${vtn(p)}"`:''}><i class="jn ${aberto(p)?jc(p):''}"></i><span class="n num">${p.n||''}</span><span><b>${nr(p,'mo')}${esc(p.nome)}</b> <span class="muted">${esc([p.tamanho&&TAM[p.tamanho]?.l,...(p.tags||[])].filter(Boolean).join(' · '))}</span></span><span class="muted ci" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.cidade||p.obs)}</span>
+      return `<button class="lin" data-a="abrir" data-id="${p.id}" ${aberto(p)?`style="${vtn(p)}"`:''}><i class="jn ${aberto(p)?jc(p):''}"></i><span class="n num">${p.n||''}</span><span><b>${nr(p,'mo')}${esc(p.nome)}</b> ${chipU(p)} <span class="muted">${esc([p.tamanho&&TAM[p.tamanho]?.l,...(p.tags||[])].filter(Boolean).join(' · '))}</span></span><span class="muted ci" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.cidade||p.obs)}</span>
       <span class="et">${aberto(p)&&ei>=0?`<span class="etapas" data-tip="${p.andamento}">${ETAPAS.map((e,i)=>`<i class="${i<=ei?'f':''}"></i>`).join('')}</span><span class="muted" style="font-size:12px">${p.andamento}</span>`:`<span class="muted">${p.andamento}</span>`}</span>
       <span>${aberto(p)?chipPrazo(p):`<span class="chip">${dd(p.entregue)||'sem data'}</span>`}</span><span class="v num">${brl(p.valor)}${p.pago==='Sinal'?' <span class="chip o">½</span>':''}</span></button>`}).join('')}${k[0]==='z'&&g[k].length>60?`<p class="muted">Mais ${g[k].length-60} na tabela.</p>`:''}</div>`).join('')||'<p class="sub">Nada encontrado com esse filtro.</p>';
   }else{
     const C=[['n','nº'],['nome','Nome'],['andamento','Andamento'],['tamanho','Tamanho'],['tecnicas','Técnica'],['cidade','Cidade'],['contato','Contato'],['prazoFim','Prazo'],['entregue','Entregue'],['pago','Pago'],['valor','Valor']];
     const s=[...ps].sort((a,b)=>{const x=a[ui.ord],y=b[ui.ord];const c=typeof x==='number'?x-y:String(x||'').localeCompare(String(y||''),'pt');return ui.desc?-c:c});
-    corpo=`<p class="sub">${s.length} encomendas · ${brl(sum(s,p=>p.valor))} · ${brl(sum(s,falta))} a receber</p><div class="tw"><table><thead><tr>${C.map(([k,l])=>`<th data-a="ord" data-k="${k}" class="${k==='valor'?'r':''}">${l}${ui.ord===k?(ui.desc?' ↓':' ↑'):''}</th>`).join('')}</tr></thead><tbody>${s.slice(0,ui.leve?150:1e9).map(p=>`<tr data-a="abrir" data-id="${p.id}"><td class="num">${p.n||''}</td><td><b>${esc(p.nome)}</b></td><td>${atrasado(p)?'<span class="chip a">'+p.andamento+'</span>':p.andamento}</td><td>${esc(p.tamanho&&TAM[p.tamanho]?.l||'')}${tem(p,'Moldura')?' + moldura':''}</td><td>${esc((p.tecnicas||[]).join(', '))}</td><td>${esc(p.cidade)}</td><td>${dd(p.contato)}</td><td>${dd(p.prazoFim)}</td><td>${dd(p.entregue)}</td><td>${chipPago(p)}</td><td class="r num">${brl(p.valor)}</td></tr>`).join('')}</tbody></table></div>${ui.leve&&s.length>150?`<p class="sub" style="margin-top:10px">Modo leve: mostrando 150 de ${s.length}. Use a busca, as tags ou os filtros para chegar nas outras.</p>`:''}`;
+    corpo=`<p class="sub">${s.length} encomendas · ${brl(sum(s,p=>p.valor))} · ${brl(sum(s,falta))} a receber</p><div class="tw"><table><thead><tr>${C.map(([k,l])=>`<th data-a="ord" data-k="${k}" class="${k==='valor'?'r':''}">${l}${ui.ord===k?(ui.desc?' ↓':' ↑'):''}</th>`).join('')}</tr></thead><tbody>${s.map(p=>`<tr data-a="abrir" data-id="${p.id}"><td class="num">${p.n||''}</td><td><b>${esc(p.nome)}</b> ${chipU(p)}</td><td>${atrasado(p)?'<span class="chip a">'+p.andamento+'</span>':p.andamento}</td><td>${esc(p.tamanho&&TAM[p.tamanho]?.l||'')}${tem(p,'Moldura')?' + moldura':''}</td><td>${esc((p.tecnicas||[]).join(', '))}</td><td>${esc(p.cidade)}</td><td>${dd(p.contato)}</td><td>${dd(p.prazoFim)}</td><td>${dd(p.entregue)}</td><td>${chipPago(p)}</td><td class="r num">${brl(p.valor)}</td></tr>`).join('')}</tbody></table></div>`;
   }
   return cab+corpo}
 
@@ -572,7 +578,7 @@ function dPrecos(){if(ui.aba!=='precos'||!$('#folhas'))return;const t=tabela(),m
 function vAjustes(){return `<h1 class="tit">Onde os dados moram.</h1>
   <div class="grade c2" style="margin-top:24px">
   <section class="folha"><h2>Planilha do Google</h2>
-    ${conta.url?`<p class="sub">Conectado. As encomendas ficam na aba Encomendas da sua planilha e cada alteração é enviada sozinha. Para usar em outro aparelho, abra esta página nele e cole o mesmo link e a mesma senha.</p>${ultErro?`<p class="sub" style="color:var(--alizarina)">${esc(ultErro)}. Isso protege a base contra um aparelho desatualizado.</p><div class="barra"><button class="btn" data-a="descarta">Usar a versão da planilha</button><button class="btn q" data-a="forca">Gravar a deste aparelho mesmo assim</button></div>`:''}<button class="btn q" data-a="sair">Desconectar este aparelho</button>
+    ${conta.url?`<p class="sub">Conectado. As encomendas ficam na aba Encomendas da sua planilha e cada alteração é enviada sozinha. Para usar em outro aparelho, abra esta página nele e cole o mesmo link e a mesma senha.</p>${ultErro?`<p class="sub" style="color:var(--alizarina)">${esc(ultErro)}. Isso protege a base contra um aparelho desatualizado.</p><div class="barra"><button class="btn" data-a="descarta">Usar a versão da planilha</button><button class="btn q" data-a="forca">Gravar a deste aparelho mesmo assim</button></div>`:''}<p class="sub" id="scriptv">Conferindo a versão do script da planilha…</p><button class="btn q" data-a="sair">Desconectar este aparelho</button>
       <h2 style="margin-top:30px">Cópias de segurança</h2><p class="sub">A planilha guarda sozinha uma cópia no primeiro salvamento de cada dia (as 7 últimas) e outra quando um aparelho grava por cima de algo que não tinha visto. Ficam na aba Histórico.</p><div id="copias"><button class="btn q" data-a="copias">Ver as cópias</button></div>`
     :`<p class="sub">Cole o link do App da Web publicado na sua planilha (termina em /exec) e a senha que você definiu no script. Os dois ficam guardados só neste aparelho.</p>
       <label class="campo"><span>Link do App da Web</span><input type="url" id="purl" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec"></label>
@@ -582,7 +588,7 @@ function vAjustes(){return `<h1 class="tit">Onde os dados moram.</h1>
     <div class="barra"><button class="btn q" data-a="csv">Baixar planilha</button><button class="btn q" data-a="json">Baixar cópia completa</button><label class="btn q" style="cursor:pointer">Importar arquivo JSON<input type="file" id="imp" accept=".json,application/json" hidden></label></div>
     <p class="muted" id="impm">${S.pedidos.length} encomendas guardadas.</p>
     <div class="campo"><span>Desempenho neste aparelho</span><div class="seg"><button data-a="leve" data-k="" aria-pressed="${!ui.leve}">Completo</button><button data-a="leve" data-k="1" aria-pressed="${!!ui.leve}">Modo leve</button></div>
-      <p class="muted" style="margin:8px 0 0;font-size:14px">O modo leve desliga animações, transições entre telas, o cursor redondo e sombras, e encurta a tabela. Vale só para este aparelho.</p></div>
+      <p class="muted" style="margin:8px 0 0;font-size:14px">O modo leve desliga animações, transições entre telas, o cursor redondo e as sombras. Vale só para este aparelho.</p></div>
     <label class="campo" style="max-width:220px"><span>Taxa de pressa (%)</span><input type="number" data-pressa value="${S.precos.pressa}"></label></section></div>`}
 function baixar(nome,txt,tipo){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:tipo}));a.download=nome;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
 function csv(){const C=['n','nome','andamento','tamanho','tecnicas','tags','cidade','obs','contato','prazoIni','prazoFim','entregue','pago','pgto','valor','horas'];
@@ -603,7 +609,7 @@ function plano(){const pl=S.precos.plano||{},cap=Math.max(1,+pl.cap||Math.round(
     const atras=p=>p.prazoFim&&p.prazoFim<ini,vence=p=>p.prazoFim&&p.prazoFim>=ini&&p.prazoFim<=maisDias(ini,13);
     const txtAtr=p=>{const a=dias(p.prazoFim,ini);return 'atrasada '+(a>=60?Math.round(a/30)+' meses':a+' dias')};
     [...rest].filter(p=>et(p)>0).sort((a,b)=>et(b)-et(a)||pz(a,b)).forEach(q=>tira(p=>p===q,'já começada'));
-    while(tira(p=>tem(p,'Pressa'),'pressa'));
+    while(tira(p=>urgente(p),p=>/pressa/i.test(urgente(p))?'pressa':'aniversário'));
     if(ini<=natal)while(tira(p=>(p.tags||[]).some(t=>/natal/i.test(t)),'para o Natal'));
     if(equil){let ok=true;while(ok&&itens.length<cap){ok=k%3<2?(tira(atras,txtAtr)||tira(vence,p=>'vence '+dd(p.prazoFim).slice(0,5))):(tira(vence,p=>'vence '+dd(p.prazoFim).slice(0,5))||tira(atras,txtAtr));k++}}
     else{while(tira(atras,txtAtr));while(tira(vence,p=>'vence '+dd(p.prazoFim).slice(0,5)));}
@@ -615,20 +621,25 @@ function vSemana(){if(!S.pedidos.length)return vazio();const pl=plano(),r=ritmo(
   <section class="ed" style="margin-top:clamp(24px,4vw,56px)"><div><h2>Seu ritmo</h2><div class="giga" id="capn"></div><p class="sub" style="margin-top:8px">obras por semana</p>
       <input type="range" min="1" max="15" step="1" value="${pl.cap}" id="cap" aria-label="Obras por semana">
       <div class="seg" style="margin-top:16px"><button data-a="estr" data-k="equil" aria-pressed="${pl.equil}">Equilibrar</button><button data-a="estr" data-k="antigas" aria-pressed="${!pl.equil}">Mais antigas primeiro</button></div>
-      <p class="sub" style="margin-top:14px">${pl.equil?'A cada três vagas, duas vão para as mais atrasadas e uma para o que vence nos próximos dias, para não criar atrasos novos.':'Todas as vagas vão para as mais atrasadas, até zerar.'} Antes disso entram as já começadas, as com pressa e, até 25/12, as de Natal.</p>
+      <p class="sub" style="margin-top:14px">${pl.equil?'A cada três vagas, duas vão para as mais atrasadas e uma para o que vence nos próximos dias, para não criar atrasos novos.':'Todas as vagas vão para as mais atrasadas, até zerar.'} Antes disso entram as já começadas, as de Pressa e Aniversário e, até 25/12, as de Natal.</p>
       <p class="sub">Nas últimas 12 semanas você entregou ${r.ent.toFixed(1).replace('.',',')} por semana e recebeu ${r.che.toFixed(1).replace('.',',')} pedidos novos por semana.</p></div>
     <div id="semcorpo"></div></section>`}
 function dSemana(){if(ui.aba!=='semana'||!$('#semcorpo'))return;const pl=plano(),r=ritmo(),s0=pl.sem[0],ent=S.pedidos.filter(p=>p.andamento==='Finalizado');
   $('#capn').textContent=pl.cap;
   $('#semtit').innerHTML=s0?`Semana de ${semTxt(s0.ini)}: ${s0.itens.length} para pintar.`:'Nada na fila para pintar.';
   const zera=pl.sem.findIndex(s=>s.atr===0),mxa=Math.max(1,...pl.sem.map(s=>s.itens.length));
-  const linha=({p,m},acao)=>{const i=ETAPAS.indexOf(p.andamento),prox=ETAPAS[i+1];return `<div class="fp" style="${vtn(p)}"><button data-a="abrir" data-id="${p.id}"><i class="jn ${jc(p)}"></i><b>${nr(p)}${esc(p.nome)}</b> <span class="muted">${esc(p.tamanho&&TAM[p.tamanho]?.l||'')}${tem(p,'Moldura')?' com moldura':''} · ${esc(p.andamento)}${p.cidade?' · '+esc(p.cidade):''}</span></button><span class="chip ${/atrasada/.test(m)?'a':/pressa|Natal/.test(m)?'o':''}">${m}</span>${acao==='entrega'?`<button class="btn q s" data-a="entrega" data-id="${p.id}">Marcar entregue</button>`:`<span class="acs"><button class="btn ${p.cron?'p':'q'} s" data-a="cron" data-id="${p.id}">${p.cron?'Parar '+fmtCron(p).slice(0,-3):'Cronometrar'}</button><button class="btn q s" data-a="avanca" data-id="${p.id}">Passar para ${prox}</button></span>`}</div>`};
+  const linha=({p,m},acao)=>{const i=ETAPAS.indexOf(p.andamento),prox=ETAPAS[i+1];return `<div class="fp" style="${vtn(p)}"><button data-a="abrir" data-id="${p.id}"><i class="jn ${jc(p)}"></i><b>${nr(p)}${esc(p.nome)}</b> ${chipU(p)} <span class="muted">${esc(p.tamanho&&TAM[p.tamanho]?.l||'')}${tem(p,'Moldura')?' com moldura':''} · ${esc(p.andamento)}${p.cidade?' · '+esc(p.cidade):''}</span></button><span class="chip ${/atrasada/.test(m)?'a':/pressa|anivers|Natal/.test(m)?'o':''}">${m}</span>${acao==='entrega'?`<button class="btn q s" data-a="entrega" data-id="${p.id}">Marcar entregue</button>`:`<span class="acs"><button class="btn ${p.cron?'p':'q'} s" data-a="cron" data-id="${p.id}">${p.cron?'Parar '+fmtCron(p).slice(0,-3):'Cronometrar'}</button><button class="btn q s" data-a="avanca" data-id="${p.id}">Passar para ${prox}</button></span>`}</div>`};
   $('#semcorpo').innerHTML=(s0?s0.itens.map(x=>linha(x)).join(''):'<p class="sub">Tudo o que estava na fila já foi pintado.</p>')+
     (ent.length?`<h2 style="margin-top:clamp(36px,5vw,64px)">Só falta entregar</h2><p class="sub">Prontas, não ocupam vaga de pintura.</p>${ent.map(p=>linha({p,m:prazoTxt(p)},'entrega')).join('')}`:'')+
     (pl.sem.length>1?`<h2 style="margin-top:clamp(36px,5vw,64px)">As próximas semanas</h2>
     <p class="sub" style="max-width:70ch">${zera<0?'Nesse ritmo os atrasos não zeram dentro do horizonte calculado.':zera===0?'Com a semana atual, nenhuma encomenda da fila fica atrasada.':`Nesse ritmo, a fila de hoje deixa de ter atrasos na semana de ${semTxt(pl.sem[zera].ini)} (${zera+1} semanas) e acaba na semana de ${semTxt(pl.sem[pl.sem.length-1].ini)}.`} A conta só olha para as ${pl.total} encomendas que já estão na fila${r.che>=pl.cap?`; como entram ${r.che.toFixed(1).replace('.',',')} pedidos novos por semana, com ${pl.cap} obras por semana a fila não diminui`:''}.</p>
     <div class="sems">${pl.sem.map((s,i)=>`<div class="${i===0?'at':''}"><div class="pil" style="height:${mxa*26+8}px">${s.itens.map(({p,m})=>`<button class="jn ${jc(p)}" data-a="abrir" data-id="${p.id}" data-tip="${esc((p.n?'nº '+p.n+' · ':'')+p.nome+'\n'+(p.tamanho||'')+' · '+p.andamento+'\n'+m)}" aria-label="${esc(p.nome)}"></button>`).join('')}</div><b>${+s.ini.slice(8)} ${MES[+s.ini.slice(5,7)-1]}</b><span class="${s.atr?'':'ok'}">${s.atr?s.atr+' atras.':'em dia'}</span></div>`).join('')}</div>`:'')}
 
+async function confereScript(){const e=$('#scriptv');if(!e||!conta.url)return;
+  try{const r=await pedeRemoto('acao=historico');const el=$('#scriptv');if(!el)return;
+    if(r.copias){el.innerHTML='<b style="color:var(--viridian)">Script da planilha atualizado.</b> A aba Feira aparece depois que você mexer em alguma ferramenta da feira, e a aba Histórico a partir do primeiro salvamento de amanhã.'}
+    else{el.innerHTML='<b style="color:var(--alizarina)">A planilha ainda está com uma versão antiga do script.</b> As encomendas sincronizam, mas horas, feira e cópias de segurança não são gravadas. No Apps Script: cole o Codigo.gs novo, salve, e em Implantar &gt; Gerenciar implantações clique no lápis, escolha Versão: Nova versão e Implantar.'}}
+  catch(x){const el=$('#scriptv');if(el)el.textContent='Não deu para conferir o script agora: '+x.message+'.'}}
 /* ============ horas reais (cronômetro por obra) ============ */
 const tempoDe=p=>(+p.horas||0)+(p.cron?(Date.now()-p.cron)/36e5:0);
 const fmtH=h=>{const m=Math.round(h*60);return Math.floor(m/60)+'h'+String(m%60).padStart(2,'0')};
@@ -651,6 +662,8 @@ function insights(){const L=[],val=S.pedidos.filter(p=>p.andamento!=='Cancelada'
   if(atr.length){const v=[...atr].sort((x,y)=>x.prazoFim.localeCompare(y.prazoFim))[0];
     add('atraso',G1,'a',`${b(atr.length)} das ${and.length} encomendas em andamento passaram do prazo. A mais antiga é a ${b('nº '+v.n)}, de ${esc(v.nome)}.`,'Conta Fila, Rascunhos, Nanquim, Aquarela e Finalizado com prazo vencido.','enc:atrasadas|Ver as atrasadas')}
   else if(and.length)add('atraso',G1,'v',`Nenhuma das ${b(and.length)} encomendas em andamento está atrasada.`,'Conta as etapas de Fila a Finalizado.');
+  const ug=S.pedidos.filter(urgente),uga=ug.filter(atrasado);
+  if(ug.length)add('urg',G1,uga.length?'a':'',uga.length?`${b(uga.length)} das ${ug.length} encomendas de Pressa ou Aniversário já passaram do prazo.`:`${b(ug.length)} ${ug.length==1?'encomenda aberta é':'encomendas abertas são'} de Pressa ou Aniversário. Nenhuma está atrasada.`,'São as que não podem atrasar. Aparecem com a etiqueta escura em todo o sistema.','enc:abertas|Ver as abertas');
   const esp=a=>med(doAno(a).filter(p=>p.entregue).map(p=>dias(p.contato,p.entregue)).filter(x=>x>=0)),nEsp=a=>doAno(a).filter(p=>p.entregue).length;
   if(nEsp(ano)>=5&&nEsp(ant)>=5){const e1=esp(ano),e0=esp(ant);
     add('espera',G1,e1>e0*1.1?'a':e1<e0*.9?'v':'',`Quem pediu em ${ano} esperou ${b(Math.round(e1)+' dias')} pela obra. Em ${ant} eram ${b(Math.round(e0)+' dias')}.`,'Mediana entre a data do contato e a da entrega, só dos pedidos já entregues.')}
@@ -1689,7 +1702,7 @@ function render(anim){const vt=anim&&!ui.leve&&document.startViewTransition&&!ma
 function pinta(){document.body.dataset.aba=ui.aba;document.body.classList.toggle('leve',!!ui.leve);focoFixo='';
   $('#nav').innerHTML=ABAS.map(([k,l])=>`<button data-a="aba" data-k="${k}" ${ui.aba===k?'aria-current="page"':''}>${l}</button>`).join('');
   $('#app').innerHTML=({geral:vGeral,enc:vEnc,precos:vPrecos,semana:vSemana,insights:vInsights,feira:()=>'<div id="kit"></div>',ajustes:vAjustes}[ui.aba]||vGeral)();
-  dRua();dPrecos();dSemana();tique();$('#aj').setAttribute('aria-pressed',ui.aba==='ajustes');if($('#kit')){$('#kit').classList.toggle('leve',!!ui.leve);Kit.monta($('#kit'))}guardaUi()}
+  dRua();dPrecos();dSemana();tique();confereScript();$('#aj').setAttribute('aria-pressed',ui.aba==='ajustes');if($('#kit')){$('#kit').classList.toggle('leve',!!ui.leve);Kit.monta($('#kit'))}guardaUi()}
 function fechar(){document.body.classList.remove('g');sel=null;const y=scrollY;render();scrollTo(0,y)}
 const A={
   aba(e){ui.aba=e.dataset.k;render(1);scrollTo(0,0)},
