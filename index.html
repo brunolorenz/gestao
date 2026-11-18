@@ -292,6 +292,7 @@ body[data-aba=porta] #marca i{color:var(--luz)}
 .fform{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0 18px}.fform .campo{margin-top:10px}
 .fp.mov{grid-template-columns:1fr auto auto;align-items:center;padding:12px 0}
 @media(max-width:560px){.fp.mov{grid-template-columns:1fr auto}.fp.mov>.lk,.fp.mov>span:last-child{grid-column:1/-1;justify-self:start}}
+.pgres{font-size:13.5px;margin:8px 0 0;max-width:46ch}
 /* modo leve */
 body.leve *,body.leve *::before,body.leve *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 body.leve #cur{display:none!important}
@@ -544,7 +545,9 @@ function gaveta(){const p=sel,sg=sugestao(p);
     <div class="campo"><span>Pagamento</span><div>${['Sinal','Pago','Não'].map(e=>`<button class="tog" data-a="set" data-f="pago" data-k="${e}" aria-pressed="${p.pago===e}">${e==='Não'?'Não pago':e}</button>`).join('')}</div></div></div>
   ${sg&&sg!==p.valor?`<button class="btn q s" style="margin-top:8px" data-a="usar" data-k="${sg}">Pela tabela: ${brl(sg)} · usar</button>`:''}
   ${falta(p)?`<p class="muted" style="margin:8px 0 0">Falta receber ${brl(falta(p))}.</p>`:''}
-  ${(r=>p.pago==='Sinal'||p.pago==='Pago'?`<div class="duo">${p.pago==='Sinal'||r.s?`<label class="campo"><span>Sinal recebido em</span><input type="date" data-pg="s" value="${r.s||''}"></label>`:''}${p.pago==='Pago'?`<label class="campo"><span>${r.s?'Restante recebido em':'Pago em'}</span><input type="date" data-pg="f" value="${r.f||''}"></label>`:''}</div>${!r.s&&!r.f?'<p class="muted" style="font-size:13px;margin:6px 0 0">Sem data de pagamento, o financeiro usa a data do pedido.</p>':''}`:'')((S.precos.pg||{})[p.id]||{})}
+  ${(r=>{if(p.pago!=='Sinal'&&p.pago!=='Pago')return '';const v=+p.valor||0,mv=movimentos().filter(m=>m.pid===p.id);
+    return `<div class="duo">${p.pago==='Sinal'||r.s?`<label class="campo"><span>Sinal de ${brl2(v/2)} recebido em</span><input type="date" data-pg="s" value="${r.s||''}"></label>`:''}${p.pago==='Pago'?`<label class="campo"><span>${r.s?`Restante de ${brl2(v/2)} recebido em`:`Total de ${brl2(v)} recebido em`}</span><input type="date" data-pg="f" value="${r.f||''}"></label>`:''}</div>
+    <p class="muted pgres">${mv.length?'No financeiro: '+mv.map(m=>`${brl2(m.v)} ${m.desc.endsWith('(sinal)')?'de sinal':m.desc.endsWith('(restante)')?'de restante':'à vista'} em ${MESL[+m.d.slice(5,7)-1].toLowerCase()} de ${m.d.slice(0,4)}`).join(' e ')+'.':''}${!r.s&&!r.f?' Sem data de pagamento registrada, conta na data do pedido.':''}</p>`})((S.precos.pg||{})[p.id]||{})}
   <label class="campo"><span>Forma de pagamento</span><select data-f="pgto">${['','Pix','Cartão','Contrato'].map(o=>`<option ${p.pgto===o?'selected':''}>${o}</option>`).join('')}</select></label>
   ${c('Cidade do predinho','cidade')}
   <label class="campo"><span>Observações</span><textarea data-f="obs">${esc(p.obs)}</textarea></label>
@@ -2000,7 +2003,7 @@ document.addEventListener('input',ev=>{const e=ev.target,d=e.dataset;
   if(e.id==='certbase'){S.precos.certBase=e.value.trim();salvar();return}
   if(d.ce&&certD){certD[d.ce]=e.value;guardaCert();clearTimeout(certT);certT=setTimeout(pintaCert,120);return}
   if(e.id==='ftag'){ui.tag=e.value;render();return}
-  if(d.pg&&sel){const m=S.precos.pg=S.precos.pg||{},r=m[sel.id]=m[sel.id]||{};if(e.value)r[d.pg]=e.value;else delete r[d.pg];if(!r.s&&!r.f)delete m[sel.id];salvar();return}
+  if(d.pg&&sel){const m=S.precos.pg=S.precos.pg||{},r=m[sel.id]=m[sel.id]||{};if(e.value)r[d.pg]=e.value;else delete r[d.pg];if(!r.s&&!r.f)delete m[sel.id];salvar();const y=$('#gav').scrollTop;gaveta();$('#gav').scrollTop=y;return}
   if(d.f){campo(e);return}
   if(d.pv){const[k,i]=d.pv.split('.');tabela().t[k][+i]=+e.value||0;salvar();dPrecos();return}
   if(d.pc){const[k,c]=d.pc.split('.');S.precos.custos[k][c]=+e.value||0;salvar();dPrecos();return}
