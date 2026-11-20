@@ -7,6 +7,7 @@
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#0E1A44">
 <title>Certificado de Autenticidade · Bruno Lorenz</title>
+<!--OG--><meta property="og:type" content="website"><meta property="og:title" content="Certificado de Autenticidade · Uns Predinhos"><meta property="og:description" content="Uma obra original, feita à mão por Bruno Lorenz. Toque para abrir."><!--/OG-->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
@@ -184,9 +185,12 @@ const imgOk=u=>/^(https:\/\/|data:image\/(jpeg|png|webp);base64,)/.test(u||'');
 let d=null,dataTxt='',sigImg=null,fotoImg=null;
 /* ---------- dados: o link traz um código secreto (ou, em links antigos, os próprios dados) ---------- */
 const EXEMPLO={titulo:'Sobrado da Rua da Praia',tecnica:'Aquarela e nanquim sobre papel',dim:'21 × 29,7 cm',ano:'2026',local:'Porto Alegre, Brasil',materiais:'Papel 100% algodão 300 g/m²',nota:'Este é um certificado de exemplo, para você ver como a página funciona.',comprador:'Nome de quem encomendou',dedic:'Uma dedicatória escrita à mão cabe aqui.',data:new Date().toISOString().slice(0,10),num:'UNS_000/2026'};
+const CFG=/*CFG*/{}/*/CFG*/;
+const pedeCert=async(s,t)=>{const r=await fetch('https://script.google.com/macros/s/'+s+'/exec?cert='+encodeURIComponent(t));const j=await r.json();if(!j.cert)throw new Error(j.erro||'Certificado não encontrado');return {d:j.cert}};
 async function busca(){const h=location.hash.slice(1);if(!h)return {d:EXEMPLO,ex:true};
+  if(/^[A-Za-z0-9-]{3,90}$/.test(h)){if(!CFG.s)throw new Error('Página sem configuração');return pedeCert(CFG.s,h)}
   const q=new URLSearchParams(h),t=q.get('t'),s=q.get('s');
-  if(t&&s&&/^[\w-]+$/.test(s)){const r=await fetch('https://script.google.com/macros/s/'+s+'/exec?cert='+encodeURIComponent(t));const j=await r.json();if(!j.cert)throw new Error(j.erro||'Certificado não encontrado');return {d:j.cert}}
+  if(t&&s&&/^[\w-]+$/.test(s))return pedeCert(s,t);
   const b=atob(h.replace(/-/g,'+').replace(/_/g,'/'));return {d:JSON.parse(new TextDecoder().decode(Uint8Array.from(b,c=>c.charCodeAt(0))))}}
 function carrega(src){return new Promise(r=>{if(!imgOk(src))return r(null);const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src})}
 /* ---------- monta o cartão ---------- */
@@ -229,17 +233,16 @@ function mede(){W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;cx.set
 function semeia(){luzes=Array.from({length:Math.round(Math.min(130,W*H/9000))},()=>({x:Math.random()*W,y:Math.random()*H,z:.25+Math.random()*.75,t:Math.random()*6.28,v:.4+Math.random()*1.2,c:Math.random()<.72?'255,212,107':Math.random()<.5?'185,200,250':'255,139,209'}))}
 function estoura(x,y,n=90){for(let i=0;i<n;i++){const a=Math.random()*6.28,v=2+Math.random()*11;fagulhas.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-3,s:3+Math.random()*8,r:Math.random()*6.28,vr:(Math.random()-.5)*.4,vida:1,c:['#FFD46B','#fff6cf','#7FD6FF','#FF8BD1','#2B50FF'][i%5]})}}
 /* ---------- luz e inclinação ---------- */
-const card=$('#card');let alvo={x:0,y:0},cur={x:0,y:0},flip=0,flipAlvo=0,t0=performance.now(),mexeu=0,giro=false;
+const card=$('#card');let alvo={x:0,y:0},cur={x:0,y:0},flip=0,flipAlvo=0,t0=performance.now(),mexeu=0;
 function aponta(px,py){const b=card.getBoundingClientRect();if(!b.width)return;alvo.x=Math.max(-1,Math.min(1,(px-(b.left+b.width/2))/(b.width/2)));alvo.y=Math.max(-1,Math.min(1,(py-(b.top+b.height/2))/(b.height/2)));mexeu=performance.now()}
 addEventListener('pointermove',e=>{if(e.pointerType!=='touch'||e.buttons)aponta(e.clientX,e.clientY)},{passive:true});
-function orienta(e){if(e.gamma==null)return;giro=true;alvo.x=Math.max(-1,Math.min(1,e.gamma/28));alvo.y=Math.max(-1,Math.min(1,(e.beta-42)/28));mexeu=performance.now()}
 function quadro(now){const t=(now-t0)/1000;
   cx.clearRect(0,0,W,H);
   for(const l of luzes){const a=(.25+.75*(.5+.5*Math.sin(t*l.v+l.t)))*l.z*.8,s=1.5+l.z*4,x=l.x-cur.x*26*l.z,y=l.y-cur.y*18*l.z-((t*6*l.z)%H),yy=((y%H)+H)%H;
     cx.beginPath();cx.fillStyle=`rgba(${l.c},${a*.14})`;cx.arc(x,yy,s*3.2,0,6.29);cx.fill();cx.beginPath();cx.fillStyle=`rgba(${l.c},${a})`;cx.arc(x,yy,s,0,6.29);cx.fill()}
   for(let i=fagulhas.length-1;i>=0;i--){const f=fagulhas[i];f.x+=f.vx;f.y+=f.vy;f.vy+=.22;f.vx*=.985;f.r+=f.vr;f.vida-=.012;if(f.vida<=0){fagulhas.splice(i,1);continue}
     cx.save();cx.translate(f.x,f.y);cx.rotate(f.r);cx.globalAlpha=Math.min(1,f.vida*1.6);cx.fillStyle=f.c;cx.shadowColor=f.c;cx.shadowBlur=14;cx.fillRect(-f.s/2,-f.s/5,f.s,f.s/2.5);cx.restore()}
-  if(!RM){if(now-mexeu>2600&&!giro){alvo.x=Math.sin(t*.7)*.45;alvo.y=Math.cos(t*.9)*.3}cur.x+=(alvo.x-cur.x)*.07;cur.y+=(alvo.y-cur.y)*.07}
+  if(!RM){if(now-mexeu>2600){alvo.x=Math.sin(t*.7)*.45;alvo.y=Math.cos(t*.9)*.3}cur.x+=(alvo.x-cur.x)*.07;cur.y+=(alvo.y-cur.y)*.07}
   flip+=(flipAlvo-flip)*.085;if(Math.abs(flipAlvo-flip)<.05)flip=flipAlvo;
   const v=((flip%360)+360)%360;card.classList.toggle('virado',v>90&&v<270);const lado=card.classList.contains('virado')?-1:1;
   card.style.setProperty('--ry',(cur.x*13+flip).toFixed(2)+'deg');card.style.setProperty('--rx',(-cur.y*11).toFixed(2)+'deg');
@@ -248,7 +251,6 @@ function quadro(now){const t=(now-t0)/1000;
   requestAnimationFrame(quadro)}
 /* ---------- abrir, virar, salvar ---------- */
 function abre(){if(!d||document.body.classList.contains('abrindo'))return;toca('abre');
-  try{if(typeof DeviceOrientationEvent!=='undefined'&&DeviceOrientationEvent.requestPermission)DeviceOrientationEvent.requestPermission().then(s=>{if(s==='granted')addEventListener('deviceorientation',orienta)}).catch(()=>{});else addEventListener('deviceorientation',orienta)}catch(e){}
   document.body.classList.add('abrindo');
   setTimeout(()=>{$('#intro').hidden=true;$('#palco').hidden=false;document.body.classList.add('aberto');card.classList.add('pronto');scrollTo(0,0);estoura(W/2,H*.45,RM?0:120)},RM?0:1550);
   setTimeout(()=>{const s=document.querySelector('.frente .selo');if(s){toca('selo');if(!RM){const b=s.getBoundingClientRect();estoura(b.left+b.width/2,b.top+b.height/2,46)}}},RM?0:4450)}
