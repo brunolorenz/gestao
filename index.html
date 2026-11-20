@@ -315,6 +315,7 @@ body[data-aba=porta] #marca i{color:var(--luz)}
 #menu .mpe{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #ffffff33;padding-top:16px;font-size:14px;color:var(--lavado)}
 #menu .mpe button{font:700 18px var(--disp);color:#fff}#menu .mpe button[aria-current]{color:var(--luz)}
 body.menuon{overflow:hidden}
+body:not([data-aba=fin]) #fab{display:none}
 #fab{position:fixed;right:calc(18px + env(safe-area-inset-right));bottom:calc(18px + env(safe-area-inset-bottom));z-index:36;display:flex;align-items:center;gap:10px;height:60px;padding:0 24px 0 18px;background:var(--cobalto);color:#fff;font:700 17px var(--disp);box-shadow:0 14px 34px -8px #2b50ffaa,0 4px 10px #0e1a4433;transition:transform .15s,background .15s}
 #fab span{font:400 34px/1 var(--disp);margin-top:-3px}#fab em{font-style:normal}
 #fab:hover{transform:translateY(-2px);background:var(--tinta)}
@@ -339,6 +340,11 @@ details.mais>summary span{font:400 15px var(--txt);letter-spacing:0;color:var(--
 details.mais>.ed:first-of-type{border-top:1px solid var(--linha)}
 main{padding-bottom:110px}
 body.leve #menu,body.leve #lanc .lcaixa{animation:none}
+.fsub{padding:6px 0 14px 18px;border-bottom:1px solid var(--linha);border-left:3px solid var(--ceu);margin-left:2px}
+.fsub>div{display:grid;grid-template-columns:minmax(150px,1fr) 2fr auto minmax(78px,auto);gap:4px 16px;align-items:center;padding:7px 0;font-size:14.5px}
+.fsub>div>span{color:var(--cinza)}.fsub>div>i{display:block;height:10px;min-width:2px}.fsub>div>b{font:700 17px var(--disp);text-align:right}.fsub>div>em{font-style:normal;color:var(--cinza);font-size:13.5px;text-align:right}
+.fsub>p{margin:8px 0 0;font-size:14px;color:var(--cinza);max-width:62ch}.fsub>p b{color:var(--tinta)}
+@media(max-width:600px){.fsub>div{grid-template-columns:1fr auto;gap:2px 10px}.fsub>div>i{grid-column:1/-1;grid-row:2}.fsub>div>em{grid-column:2;grid-row:3}}
 /* modo leve */
 body.leve *,body.leve *::before,body.leve *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 body.leve #cur{display:none!important}
@@ -825,8 +831,8 @@ function marcaPg(p,antes){if(p.pago===antes)return;const m=S.precos.pg=S.precos.
 /* todas as entradas, gastos e retiradas, de todas as fontes */
 function movimentos(){const f=fin(),M=[];
   S.pedidos.forEach(p=>{if(p.andamento==='Cancelada'||!(+p.valor>0))return;const v=+p.valor,r=(S.precos.pg||{})[p.id],nm=(p.n?'nº '+p.n+' · ':'')+(p.nome||'');
-    if(r&&(okD(r.s)||okD(r.f))){if(okD(r.s))M.push({t:'e',f:'enc',d:r.s,v:v/2,desc:nm+' (sinal)',pid:p.id});if(okD(r.f))M.push({t:'e',f:'enc',d:r.f,v:okD(r.s)?v/2:v,desc:nm+(okD(r.s)?' (restante)':''),pid:p.id})}
-    else if(okD(p.contato)&&(p.pago==='Pago'||p.pago==='Sinal'))M.push({t:'e',f:'enc',d:p.contato,v:p.pago==='Pago'?v:v/2,desc:nm+(p.pago==='Sinal'?' (sinal)':''),pid:p.id,est:1})});
+    if(r&&(okD(r.s)||okD(r.f))){if(okD(r.s))M.push({t:'e',f:'enc',k:'sinal',d:r.s,v:v/2,desc:nm+' (sinal)',pid:p.id});if(okD(r.f))M.push({t:'e',f:'enc',k:okD(r.s)?'rest':'total',d:r.f,v:okD(r.s)?v/2:v,desc:nm+(okD(r.s)?' (restante)':''),pid:p.id})}
+    else if(okD(p.contato)&&(p.pago==='Pago'||p.pago==='Sinal'))M.push({t:'e',f:'enc',k:p.pago==='Pago'?'total':'sinal',d:p.contato,v:p.pago==='Pago'?v:v/2,desc:nm+(p.pago==='Sinal'?' (sinal)':''),pid:p.id,est:1})});
   const k=S.feira||{};
   (k.diario||[]).forEach(x=>{if(!okD(x.data))return;if(+x.fat)M.push({t:'e',f:'feira',d:x.data,v:+x.fat,desc:x.feira||'Feira',kit:1});if(+x.custos)M.push({t:'s',f:'feira',d:x.data,v:+x.custos,desc:'Custos · '+(x.feira||'feira'),kit:1})});
   ((k.caixa||{}).vendas||[]).forEach(x=>{if(+x.valor&&x.t)M.push({t:'e',f:'feira',d:iso(new Date(x.t)),v:+x.valor,desc:'Caixa aberto · '+(x.nome||'venda'),kit:1})});
@@ -841,7 +847,7 @@ function grafAno(M,sel){const fimM=HOJE.slice(0,7),ms=Array.from({length:12},(_,
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" role="img" aria-label="Entradas, gastos e lucro dos últimos 12 meses">
     <line x1="0" x2="${W}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--tinta)" stroke-width="1.5"/>
     ${R.map((r,i)=>{const x=pl+i*bw,w=bw*.56;let y=Y(0),h='';['enc','feira','outras'].forEach(k=>{const hh=Y(0)-Y(r.e[k]);if(hh>0){y-=hh;h+=`<rect x="${x+bw*.08}" y="${y}" width="${w}" height="${hh}" fill="${FCOR[k]}"/>`}});
-      const gh=Y(0)-Y(r.G);return `<g data-a="finmes" data-k="${ms[i]}" data-tip="${esc(MESL[+ms[i].slice(5)-1]+' de '+ms[i].slice(0,4)+'\nentrou '+brl(r.E)+'\ngastou '+brl(r.G)+'\nficou '+brl(r.L))}">
+      const gh=Y(0)-Y(r.G);return `<g data-a="finmes" data-k="${ms[i]}" data-tip="${esc(MESL[+ms[i].slice(5)-1]+' de '+ms[i].slice(0,4)+'\nentrou '+brl(r.E)+'\ngastou '+brl(r.G)+'\nficou '+brl(r.L)+'\npedidos novos: '+S.pedidos.filter(p=>p.andamento!=='Cancelada'&&(p.contato||'').startsWith(ms[i])).length)}">
         <rect x="${x}" y="0" width="${bw}" height="${H}" fill="${ms[i]===sel?'#2B50FF14':'transparent'}"/>${h}
         ${gh>0?`<rect x="${x+bw*.66}" y="${Y(r.G)}" width="${bw*.2}" height="${gh}" fill="#0E1A44" opacity=".35"/>`:''}
         <text x="${x+bw/2}" y="${H-10}" text-anchor="middle" style="${ms[i]===sel?'fill:var(--tinta);font-weight:700':''}">${ms[i].slice(5)==='01'?ms[i].slice(0,4):MES[+ms[i].slice(5)-1]}</text></g>`}).join('')}
@@ -925,6 +931,11 @@ function vRes(M,R){const L=reservas();
         <div class="pe" style="margin-top:12px"><input type="number" min="0" step="0.01" id="ru-${x.id}" placeholder="R$" style="width:100px"><input id="rd-${x.id}" placeholder="${x.uso==='r'?'Ex.: viagem de janeiro':'Ex.: DAS de novembro'}" style="flex:1;width:auto;min-width:120px"><button class="btn s" data-a="resusa" data-k="${x.id}">Usar</button></div>
         <button class="lk" style="margin-top:10px;font-size:13px" data-a="resdel" data-k="${x.id}">remover reserva</button></div>`}).join('')}</div></section>`}
 
+function encSub(M,ym){const it=M.filter(m=>m.t==='e'&&m.f==='enc'&&m.d.startsWith(ym)),g=k=>{const x=it.filter(m=>m.k===k);return {v:sum(x,m=>m.v),n:new Set(x.map(m=>m.pid)).size}},
+    P={sinal:g('sinal'),rest:g('rest'),total:g('total')},mx=Math.max(1,...Object.values(P).map(x=>x.v)),novos=S.pedidos.filter(p=>p.andamento!=='Cancelada'&&(p.contato||'').startsWith(ym));
+  const L=[['sinal','Sinais de pedidos novos','#7F98FF'],['rest','Restantes de entregas','#2B50FF'],['total','Pagos de uma vez','#16308F']];
+  return `<div class="fsub">${L.map(([k,l,c])=>`<div><span>${l}</span><i style="width:${P[k].v/mx*100}%;background:${c}"></i><b>${brl(P[k].v)}</b><em>${P[k].n} ${P[k].n==1?'pedido':'pedidos'}</em></div>`).join('')}
+    <p>${novos.length?`<b>${novos.length} ${novos.length==1?'pedido novo chegou':'pedidos novos chegaram'}</b> em ${mesNome(ym)}, somando ${brl(sum(novos,p=>+p.valor||0))} encomendados.`:`Nenhum pedido novo registrado em ${mesNome(ym)}.`} Conta pela data do contato, mesmo que o sinal ainda não tenha sido pago.</p></div>`}
 function vFin(){const f=fin(),M=movimentos(),hojeM=HOJE.slice(0,7),ym=ui.finMes&&ui.finMes<=hojeM?ui.finMes:hojeM,R=resumo(M,ym),nm=mesNome(ym),atual=ym===hojeM,ano=ym.slice(0,4),t=ui.finTipo||'e';
   const Ra=resumo(M,ano),lim=meiLim(ano),diaAno=(new Date(HOJE+'T12:00')-new Date(ano+'-01-01T12:00'))/864e5+1,proj=ano===HOJE.slice(0,4)?Ra.E/(diaAno/(+ano%4?365:366)):Ra.E,pc=Ra.E/lim;
   const itens=M.filter(m=>m.d.startsWith(ym)).sort((a,b)=>b.d.localeCompare(a.d)||(b.v-a.v)),mxF=Math.max(1,...['enc','feira','outras'].map(k=>R.e[k]));
@@ -937,7 +948,7 @@ function vFin(){const f=fin(),M=movimentos(),hojeM=HOJE.slice(0,7),ym=ui.finMes&
     ${f.meta?`<div class="mbar"><i style="width:${Math.max(0,Math.min(100,R.L/f.meta*100))}%"></i></div><span class="muted">${R.L>=f.meta?`Meta batida${R.L>f.meta?`, ${brl(R.L-f.meta)} acima`:''}.`:`${Math.max(0,Math.round(R.L/f.meta*100))}% da meta. Faltam ${brl(f.meta-Math.max(0,R.L))}${atual?' até o fim do mês':''}.`}</span>`:'<span class="muted">Defina quanto quer que sobre por mês, depois dos gastos.</span>'}</div>
   ${(q=>q.length?`<div class="aviso" id="avq"><p><b>${q.length} encomendas entregues constam como não quitadas</b> (${brl(sum(q,p=>p.pago==='Sinal'?p.valor/2:p.valor))}). Se você só entrega depois de receber, é cadastro desatualizado.</p><button class="btn s" data-a="quita1">Marcar todas como pagas</button></div>`:'')(semQuitar())}
   <section class="ed" style="margin-top:clamp(28px,4vw,56px)"><div><h2>De onde veio, para onde foi</h2><p class="sub">Cada fonte com o que entrou e o que custou. A barra escura é o gasto daquela fonte.</p></div>
-    <div>${['enc','feira','outras'].map(linhaF).join('')}
+    <div>${linhaF('enc')}${encSub(M,ym)}${['feira','outras'].map(linhaF).join('')}
       <div class="frow"><div><b>${FONTES.geral}</b><span class="muted">aluguel, assinaturas, impostos e o que não é de uma fonte só</span></div><div></div><b class="num" style="color:var(--alizarina)">${R.s.geral?'− '+brl(R.s.geral):brl(0)}</b></div>
       <div class="frow tot"><div><b>Lucro do mês</b></div><div></div><b class="num">${brl(R.L)}</b></div></div></section>
   <section class="ed"><div><h2>Doze meses</h2><p class="sub">Barras: o que entrou, por fonte. Ao lado, em cinza, o que saiu. A linha vermelha é o lucro. Toque num mês para abri-lo.</p>
