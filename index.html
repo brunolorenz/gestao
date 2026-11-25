@@ -345,6 +345,13 @@ body.leve #menu,body.leve #lanc .lcaixa{animation:none}
 .fsub>div>span{color:var(--cinza)}.fsub>div>i{display:block;height:10px;min-width:2px}.fsub>div>b{font:700 17px var(--disp);text-align:right}.fsub>div>em{font-style:normal;color:var(--cinza);font-size:13.5px;text-align:right}
 .fsub>p{margin:8px 0 0;font-size:14px;color:var(--cinza);max-width:62ch}.fsub>p b{color:var(--tinta)}
 @media(max-width:600px){.fsub>div{grid-template-columns:1fr auto;gap:2px 10px}.fsub>div>i{grid-column:1/-1;grid-row:2}.fsub>div>em{grid-column:2;grid-row:3}}
+.frow.cp{grid-template-columns:minmax(150px,1fr) 2fr 350px}.frow.cp .pe{flex-wrap:nowrap}
+@media(max-width:900px){.frow.cp{grid-template-columns:1fr auto}.frow.cp .fbar{grid-column:1/-1;grid-row:2}.frow.cp .pe{flex-wrap:wrap}}
+.tgw{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:12px 40px}
+.tgw h3{font:700 18px var(--disp);margin:10px 0 6px}
+.tgl{display:grid;grid-template-columns:minmax(120px,1fr) auto;gap:2px 12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--linha)}
+.tgn{font:600 16px var(--disp);border:0;border-bottom:1.5px solid transparent;background:none;padding:3px 0;min-width:0}.tgn:hover{border-color:var(--linha)}.tgn:focus{outline:0;border-color:var(--cobalto)}
+.tgl>.muted{font-size:13px;grid-column:1;grid-row:2}.tga{grid-column:2;grid-row:1/3;display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.tga .lk{font-size:13.5px}
 /* modo leve */
 body.leve *,body.leve *::before,body.leve *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 body.leve #cur{display:none!important}
@@ -458,9 +465,26 @@ const chipPrazo=p=>`<span class="chip ${atrasado(p)?'a':''}">${prazoTxt(p)}</spa
 const urgente=p=>aberto(p)&&(p.tags||[]).find(t=>/pressa|anivers/i.test(t));
 const chipU=p=>{const t=urgente(p);return t?`<span class="chip u">${/pressa/i.test(t)?'Pressa':'Aniversário'}</span>`:''};
 const chipPago=p=>p.pago==='Pago'?'<span class="chip v">pago</span>':p.pago==='Sinal'?'<span class="chip o">sinal</span>':'<span class="chip a">não pago</span>';
+/* ============ gestão das tags (arquivadas em S.precos.tagsArq) ============ */
+const TFIXAS=['Moldura','Pressa'];
+const tagsArq=()=>S.precos.tagsArq=S.precos.tagsArq||[];
+const arq=t=>tagsArq().includes(t);
+function trocaTag(de,para){S.pedidos.forEach(p=>{if(!(p.tags||[]).includes(de))return;p.tags=[...new Set(p.tags.map(t=>t===de?para:t).filter(Boolean))]});
+  const A=tagsArq(),i=A.indexOf(de);if(i>=0){A.splice(i,1);if(para&&!A.includes(para)&&!todasTags().some(([t])=>t===para&&!arq(t)))A.push(para)}
+  if(ui.tag===de)ui.tag=para||''}
+function vTags(){const T=todasTags().filter(([t])=>!TFIXAS.includes(t)),at=T.filter(([t])=>!arq(t)),ar=T.filter(([t])=>arq(t));
+  const ab=t=>S.pedidos.filter(p=>aberto(p)&&(p.tags||[]).includes(t)).length;
+  const linha=([t,n])=>`<div class="tgl" data-tag="${esc(t)}"><input class="tgn" data-tagnome="${esc(t)}" value="${esc(t)}" aria-label="Nome da tag ${esc(t)}">
+      <span class="muted">${n} ${n==1?'pedido':'pedidos'}${ab(t)?` · ${ab(t)} em aberto`:''}${/natal|anivers/i.test(t)?' · usada na prioridade':''}</span>
+      <span class="tga"><button class="lk" data-a="tagver" data-k="${esc(t)}">ver</button><button class="lk" data-a="tagarq" data-k="${esc(t)}">${arq(t)?'reativar':'arquivar'}</button><button class="lk" data-a="tagdel1" data-k="${esc(t)}">apagar</button></span></div>`;
+  return `<section class="folha" style="grid-column:1/-1" id="tags"><h2>Tags</h2>
+    <p class="sub">Renomeie direto no nome; se o nome novo já existir, as duas viram uma só. <b>Arquivar</b> tira a tag da lista da ficha e do filtro, mas ela continua nos pedidos antigos. <b>Apagar</b> tira a tag de todos os pedidos. Moldura e Pressa são do sistema e ficam de fora.</p>
+    <div class="tgw"><div><h3>Em uso <span class="muted">${at.length}</span></h3>${at.map(linha).join('')||'<p class="muted">Nenhuma.</p>'}</div>
+      <div><h3>Arquivadas <span class="muted">${ar.length}</span></h3>${ar.map(linha).join('')||'<p class="muted">Nenhuma tag arquivada.</p>'}</div></div></section>`}
+
 function todasTags(){const c={};S.pedidos.forEach(p=>(p.tags||[]).forEach(t=>c[t]=(c[t]||0)+1));return Object.entries(c).sort((a,b)=>b[1]-a[1])}
 function tabela(){return S.precos.versoes[S.precos.versoes.length-1]}
-function sugestao(p){const t=tabela().t[p.tamanho];if(!t)return 0;let v=t[tem(p,'Moldura')?1:0];if(tem(p,'Pressa'))v*=1+S.precos.pressa/100;return Math.round(v)}
+function sugestao(p){const t=tabela().t[p.tamanho];if(!t)return 0;let v=t[tem(p,'Moldura')?1:0];if(tem(p,'Pressa'))v*=1+S.precos.pressa/100;return Math.round(v)+copTotal(p)}
 function filtrados(){const b=ui.busca.trim().toLowerCase();
   return S.pedidos.filter(p=>{
     if(ui.tag&&!tem(p,ui.tag))return false;
@@ -547,7 +571,7 @@ function vazio(){return `<h1 class="tit">Nenhuma encomenda por aqui ainda.</h1><
 /* ============ encomendas ============ */
 function card(p){return `<button class="card ${urgente(p)?'urg':''}" draggable="true" data-a="abrir" data-id="${p.id}" ${aberto(p)?`style="${vtn(p)}"`:''}>
   <div class="l1"><i class="jn ${p.andamento==='Entregue'?'':jc(p)}"></i><span>${nr(p)}${esc(p.nome)}</span></div>
-  <div class="l2">${esc([p.tamanho&&TAM[p.tamanho]?.l,...(p.tags||[]),p.cidade||p.obs].filter(Boolean).join(' · '))}</div>
+  <div class="l2">${esc([p.tamanho&&TAM[p.tamanho]?.l,nCop(p)?'+'+nCop(p)+(nCop(p)==1?' cópia':' cópias'):'',...(p.tags||[]),p.cidade||p.obs].filter(Boolean).join(' · '))}</div>
   <div class="l3">${chipU(p)}${p.andamento==='Entregue'?`<span class="chip v">${dd(p.entregue)||'entregue'}</span>`:chipPrazo(p)}${p.pago!=='Pago'?chipPago(p):''}<span class="num">${brl(p.valor)}</span></div></button>`}
 function vEnc(){
   if(!S.pedidos.length)return vazio();
@@ -555,7 +579,7 @@ function vEnc(){
   const cab=`<div class="barra">
     <div class="seg">${[['quadro','Quadro'],['lista','Lista'],['tabela','Tabela']].map(([k,l])=>`<button data-a="ver" data-k="${k}" aria-pressed="${ui.ver===k}">${l}</button>`).join('')}</div>
     <input type="search" id="busca" placeholder="Buscar nome, cidade, tamanho…" value="${esc(ui.busca)}" aria-label="Buscar">
-    <select id="ftag" class="in" style="width:auto;border-bottom-color:var(--tinta);padding:10px 4px;${ui.tag?'color:var(--cobalto);font-weight:700':''}" aria-label="Filtrar por tag"><option value="">Todas as tags</option>${todasTags().map(([t,n])=>`<option value="${esc(t)}" ${ui.tag===t?'selected':''}>${esc(t)} (${n})</option>`).join('')}</select>
+    <select id="ftag" class="in" style="width:auto;border-bottom-color:var(--tinta);padding:10px 4px;${ui.tag?'color:var(--cobalto);font-weight:700':''}" aria-label="Filtrar por tag"><option value="">Todas as tags</option>${todasTags().filter(([t])=>!arq(t)).map(([t,n])=>`<option value="${esc(t)}" ${ui.tag===t?'selected':''}>${esc(t)} (${n})</option>`).join('')}${(a=>a.length?`<optgroup label="Arquivadas">${a.map(([t,n])=>`<option value="${esc(t)}" ${ui.tag===t?'selected':''}>${esc(t)} (${n})</option>`).join('')}</optgroup>`:'')(todasTags().filter(([t])=>arq(t)))}</select>
     ${ui.ver!=='quadro'?`<div class="seg">${[['abertas','Em aberto'],['atrasadas','Atrasadas'],['receber','A receber'],['pend','Entregue sem quitar'],['todas','Todas']].map(([k,l])=>`<button data-a="filtro" data-k="${k}" aria-pressed="${!ui.mes&&ui.filtro===k}">${l}</button>`).join('')}</div>`:''}
     ${ui.mes?`<button class="btn q s" data-a="mes" data-k="">${MESL[+ui.mes.slice(5)-1]} ${ui.mes.slice(0,4)} ✕</button>`:''}
     <button class="btn" data-a="nova" style="margin-left:auto">Nova encomenda</button></div>`;
@@ -606,9 +630,11 @@ function gaveta(){const p=sel,sg=sugestao(p);
   <label class="campo"><span>Observações</span><textarea data-f="obs">${esc(p.obs)}</textarea></label>
   <div class="duo">${c('Contato','contato','date')}${c('Entregue em','entregue','date')}</div>
   <div class="duo">${c('Prazo: começo','prazoIni','date')}${c('Prazo: fim','prazoFim','date')}</div>
-  <div class="campo"><span>Tags</span><div>${[...new Set([...todasTags().map(x=>x[0]),...(p.tags||[])])].filter(t=>t!=='Moldura'&&t!=='Pressa').map(t=>`<button class="tog" data-a="alt" data-f="tags" data-k="${esc(t)}" aria-pressed="${tem(p,t)}">${esc(t)}</button>`).join('')}</div>
+  <div class="campo"><span>Tags</span><div>${[...new Set([...todasTags().map(x=>x[0]).filter(t=>!arq(t)),...(p.tags||[])])].filter(t=>t!=='Moldura'&&t!=='Pressa').map(t=>`<button class="tog" data-a="alt" data-f="tags" data-k="${esc(t)}" aria-pressed="${tem(p,t)}">${esc(t)}</button>`).join('')}</div>
+    <button class="lk" style="font-size:13px;margin:2px 0 4px" data-a="taggestao">organizar tags</button>
     <input id="novatag" placeholder="Criar tag nova e apertar Enter" aria-label="Criar tag nova" enterkeyhint="done"></div>
-  <div class="campo"><span>Gastos desta encomenda</span>${(g=>`${g.map(l=>`<div class="gl"><span>${esc(l.cat)}${l.desc&&!l.desc.startsWith('nº ')?' · '+esc(l.desc):''}</span><b>${brl2(l.valor)}</b><button class="lk" data-a="gdel" data-k="${l.id}">apagar</button></div>`).join('')}
+  ${blocoCopias(p)}
+  <div class="campo"><span>Gastos desta encomenda</span>${(g=>`${g.map(l=>`<div class="gl"><span>${esc(l.cat)}${l.desc&&!l.desc.startsWith('nº ')?' · '+esc(l.desc):''}</span><b>${brl2(l.valor)}</b>${l.cop?'<span class="muted" style="font-size:13px">das cópias</span>':`<button class="lk" data-a="gdel" data-k="${l.id}">apagar</button>`}</div>`).join('')}
     <div class="pe" style="margin-top:6px"><input type="number" id="gv" min="0" step="0.01" placeholder="R$" style="width:90px"><select id="gc" style="padding:6px 0;border:0;border-bottom:1.5px solid var(--linha);background:none">${['Material','Moldura','Frete e correio','Impressão','Outros'].map(c=>`<option>${c}</option>`).join('')}</select><button class="btn q s" data-a="gadd">Adicionar</button></div>
     ${g.length?`<p class="muted" style="font-size:13.5px;margin:6px 0 0">Lucro desta encomenda: <b style="color:var(--tinta)">${brl2((+p.valor||0)-sum(g,l=>l.valor))}</b>${+p.valor?` (${Math.round(((+p.valor||0)-sum(g,l=>l.valor))/(+p.valor)*100)}% do valor)`:''}.</p>`:''}`)(gastosDe(p))}</div>
   <div class="campo"><span>Foto da obra</span><div class="barra" style="margin:0">${fotoDe(p)?`<img src="${fotoDe(p)}" alt="Foto da obra" style="height:84px;box-shadow:0 0 0 1px var(--linha)">`:''}<label class="btn q s" style="cursor:pointer">${fotoDe(p)?'Trocar':'Adicionar foto'}<input type="file" class="pfoto" accept="image/*" hidden></label>${fotoDe(p)?'<button class="lk" data-a="fotodel">remover</button>':''}</div></div>
@@ -649,6 +675,7 @@ function vPrecos(){const t=tabela(),pr=praticado(),k=TP.includes(ui.sim.t)?ui.si
       <input type="range" min="0" max="30" step="0.5" value="${ui.reaj}" id="reaj" aria-label="Percentual de reajuste">
       <div class="pe" style="margin-top:16px"><label>Inflação (IPCA) acumulada desde ${dd(t.data)}, em % <input type="number" step=".1" data-ipca value="${S.precos.ipca||''}" placeholder="0"></label><button class="btn q s" data-a="ipca">Usar esse índice</button></div>
       <p class="sub" style="margin-top:14px;max-width:70ch" id="rj-ref"></p><div id="rj-ac"></div></div></section>
+  ${vCopiasPrecos()}
   <section class="ed"><div><h2>Preço por cm²</h2><p class="sub">Quanto menor a obra, mais caro o centímetro. A curva mostra se a escada entre os tamanhos está coerente.</p></div><div id="cm2"></div></section>
   <section class="ed"><div><h2>O que você de fato cobrou</h2><p class="sub">Mediana do valor das aquarelas simples (uma obra, sem moldura) em cada ano, tirada do seu histórico. Anos com menos de 3 pedidos do tamanho ficam de fora.</p></div>
     <div>${pr.anos.length>1?linhas(pr.series,pr.anos):'<p class="muted">Ainda não há histórico suficiente.</p>'}
@@ -689,7 +716,8 @@ function vAjustes(){return `<h1 class="tit">Onde os dados moram.</h1>
     <p class="muted" id="impm">${S.pedidos.length} encomendas guardadas.</p>
     <div class="campo"><span>Desempenho neste aparelho</span><div class="seg"><button data-a="leve" data-k="" aria-pressed="${!ui.leve}">Completo</button><button data-a="leve" data-k="1" aria-pressed="${!!ui.leve}">Modo leve</button></div>
       <p class="muted" style="margin:8px 0 0;font-size:14px">O modo leve desliga animações, transições entre telas, o cursor redondo e as sombras. Vale só para este aparelho.</p></div>
-    <label class="campo" style="max-width:220px"><span>Taxa de pressa (%)</span><input type="number" data-pressa value="${S.precos.pressa}"></label></section></div>`}
+    <label class="campo" style="max-width:220px"><span>Taxa de pressa (%)</span><input type="number" data-pressa value="${S.precos.pressa}"></label></section>
+  ${vTags()}</div>`}
 function baixar(nome,txt,tipo){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:tipo}));a.download=nome;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
 function csv(){const C=['n','nome','andamento','tamanho','tecnicas','tags','cidade','obs','contato','prazoIni','prazoFim','entregue','pago','pgto','valor','horas'];
   const q=v=>{v=Array.isArray(v)?v.join(', '):String(v??'');return /[";\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
@@ -811,6 +839,29 @@ function vInsights(){if(!S.pedidos.length)return vazio();const todos=insights(),
   ${gs.map(g=>`<section class="ed"><div><h2>${g}</h2></div><div>${L.filter(x=>x.g===g).map(x=>`<article class="ins ${x.tom}"><p class="frase">${x.t}</p><p class="muted">${x.d}</p><div class="barra" style="margin:10px 0 0">${x.ac?`<button class="btn q s" data-a="ins" data-k="${esc(x.ac.split('|')[0])}">${x.ac.split('|')[1]}</button>`:''}<button class="lk" data-a="insoff" data-k="${x.id}">Ocultar</button></div></article>`).join('')}</div></section>`).join('')}
   ${todos.length>L.length?`<div class="barra"><button class="btn q s" data-a="inson">Mostrar as ${todos.length-L.length} ocultas</button></div>`:''}`}
 
+/* ============ cópias Fine Art (dados em S.precos.copias e S.precos.copiasTab: sincronizam com qualquer versão do script) ============ */
+const CTAM=[['8x8','Predinho 8×8'],['A6','Postal'],['A5','A5'],['A4','A4'],['A3','A3'],['A2','A2'],['A1','A1'],['A0','A0']];
+const ctNome=k=>(CTAM.find(x=>x[0]===k)||[k,k])[1];
+function copTab(){const d={'8x8':{v:80,c:60,e:1},A6:{v:120,c:60,e:1},A5:{v:150,c:60,e:1},A4:{v:220,c:60},A3:{v:450,c:120},A2:{v:900,c:240},A1:{v:1800,c:480},A0:{v:3000,c:960,e:1}};
+  const t=S.precos.copiasTab=S.precos.copiasTab||{frete:0};CTAM.forEach(([k])=>{t[k]=Object.assign({},d[k],t[k]||{})});return t}
+const copiasDe=p=>((S.precos.copias||{})[p.id]||[]);
+const nCop=p=>sum(copiasDe(p),x=>+x.q||0);
+const copTotal=p=>sum(copiasDe(p),x=>(+x.q||0)*(+x.v||0));
+const copCusto=p=>sum(copiasDe(p),x=>(+x.q||0)*(+x.c||0))+(copiasDe(p).length?+copTab().frete||0:0);
+function blocoCopias(p){const L=copiasDe(p),T=copTab(),k0=ui.copTam||(p.tamanho&&T[p.tamanho]?p.tamanho:'A4');
+  return `<div class="campo"><span>Cópias Fine Art</span>
+    ${L.map(x=>`<div class="gl"><span><b style="font-size:15px">${x.q} × ${ctNome(x.tam)}</b> <span class="muted">${brl(x.v)} cada · custo ${brl(x.c)} cada</span></span><b>${brl(x.q*x.v)}</b><button class="lk" data-a="copdel" data-k="${x.id}">remover</button></div>`).join('')}
+    <div class="pe" style="margin-top:8px"><select id="copt" aria-label="Tamanho da cópia" style="padding:6px 0;border:0;border-bottom:1.5px solid var(--linha);background:none">${CTAM.map(([k,l])=>`<option value="${k}" ${k===k0?'selected':''}>${l}</option>`).join('')}</select>
+      <label>qtd <input type="number" id="copq" min="1" step="1" value="1" style="width:56px"></label><label>R$ cada <input type="number" id="copv" min="0" step="1" value="${T[k0].v}" style="width:80px"></label><button class="btn q s" data-a="copadd">Adicionar</button></div>
+    ${L.length?`<p class="muted" style="font-size:13.5px;margin:6px 0 0">${nCop(p)} ${nCop(p)==1?'cópia':'cópias'}: ${brl(copTotal(p))} para o cliente, já somados ao valor do pedido. Custo com o fornecedor: ${brl(copCusto(p))}${+T.frete?' (com frete)':''}. Sobram ${brl(copTotal(p)-copCusto(p))}.</p>`:'<p class="muted" style="font-size:13px;margin:6px 0 0">O preço de cada cópia vem da tabela em Preços e entra no valor do pedido; o custo do fornecedor entra sozinho no Financeiro.</p>'}</div>`}
+function vCopiasPrecos(){const T=copTab(),mx=Math.max(...CTAM.map(([k])=>+T[k].v||0),1);
+  return `<section class="ed"><div><h2>Cópias Fine Art</h2><p class="sub">Quanto você cobra por cópia e quanto o fornecedor cobra para imprimir. Hahnemühle Photo Rag 308 g, 100% algodão. A barra escura é o custo.</p>
+      <label class="pe">Frete do fornecedor por pedido (R$) <input type="number" min="0" step="1" data-cpf value="${T.frete||''}" placeholder="0" style="width:80px"></label></div>
+    <div>${CTAM.map(([k,l])=>{const v=+T[k].v||0,c=+T[k].c||0;return `<div class="frow cp"><div><b>${l}</b><span class="muted">sobram ${brl(v-c)} por cópia${v?` (${Math.round((v-c)/v*100)}%)`:''}</span></div>
+      <div class="fbar"><i style="width:${v/mx*100}%;background:var(--cobalto)"></i><i class="g" style="width:${Math.min(c,v||c)/mx*100}%"></i></div>
+      <div class="pe" style="justify-content:flex-end"><label>cobra <input type="number" min="0" step="1" data-cp="${k}.v" value="${v}" style="width:76px"></label><label>custo <input type="number" min="0" step="1" data-cp="${k}.c" value="${c}" style="width:66px"></label><span class="chip o" style="${T[k].e?'':'visibility:hidden'}" title="Custo estimado: confirme com o fornecedor">estimado</span></div></div>`}).join('')}
+      ${(e=>e.length?`<p class="muted" style="font-size:13.5px;margin:12px 0 0">Custos estimados (${e.join(', ')}): os tamanhos menores que o A4 contam como uma folha A4, e o A0 como o dobro do A1. Confirme com o fornecedor e ajuste.</p>`:'')(CTAM.filter(([k])=>T[k].e).map(x=>x[1]))}</div></section>`}
+
 /* ============ financeiro (dados em S.precos.fin e S.precos.pg: sincronizam com qualquer versão do script) ============ */
 const FONTES={enc:'Encomendas',feira:'Feiras',outras:'Outras receitas',geral:'Despesas gerais'};
 const FCOR={enc:'#2B50FF',feira:'#F2B632',outras:'#1E9E7E'};
@@ -837,6 +888,9 @@ function movimentos(){const f=fin(),M=[];
   (k.diario||[]).forEach(x=>{if(!okD(x.data))return;if(+x.fat)M.push({t:'e',f:'feira',d:x.data,v:+x.fat,desc:x.feira||'Feira',kit:1});if(+x.custos)M.push({t:'s',f:'feira',d:x.data,v:+x.custos,desc:'Custos · '+(x.feira||'feira'),kit:1})});
   ((k.caixa||{}).vendas||[]).forEach(x=>{if(+x.valor&&x.t)M.push({t:'e',f:'feira',d:iso(new Date(x.t)),v:+x.valor,desc:'Caixa aberto · '+(x.nome||'venda'),kit:1})});
   f.lanc.forEach(l=>{if(okD(l.data))M.push({cpid:l.pid||'',t:l.tipo,f:l.fonte||'',d:l.data,v:+l.valor||0,desc:l.desc||(l.tipo==='r'?'Retirada para mim':l.cat),cat:l.cat,lid:l.id})});
+  Object.entries(S.precos.copias||{}).forEach(([pid,L])=>{const p=S.pedidos.find(x=>x.id===pid);if(!p||p.andamento==='Cancelada'||!L.length)return;const nm=(p.n?'nº '+p.n+' · ':'')+(p.nome||'');
+    L.forEach(x=>{if(okD(x.data))M.push({t:'s',f:'enc',d:x.data,v:(+x.q||0)*(+x.c||0),desc:'Cópias Fine Art · '+nm,cat:'Cópias Fine Art',cpid:pid,cop:1})});
+    const fr=+copTab().frete||0,d0=L.map(x=>x.data).filter(okD).sort()[0];if(fr&&d0)M.push({t:'s',f:'enc',d:d0,v:fr,desc:'Frete das cópias · '+nm,cat:'Cópias Fine Art',cpid:pid,cop:1})});
   const ym=HOJE.slice(0,7);f.fixos.forEach(x=>{let m=x.desde||ym,g=0;const fim=x.ate&&x.ate<ym?x.ate:ym;while(m<=fim&&g++<240){M.push({t:'s',f:'geral',d:m+'-01',v:+x.valor||0,desc:x.desc||x.cat,cat:x.cat,fixo:x.id});m=addMes(m,1)}});
   return M}
 function resumo(M,pref){const r={e:{enc:0,feira:0,outras:0},s:{enc:0,feira:0,outras:0,geral:0},ret:0};
@@ -886,8 +940,9 @@ function previsao(modo){const out=[],quando={},fimSem=maisDias(segunda(),6);
   S.pedidos.forEach(p=>{if(!aberto(p))return;const v=falta(p);if(!(v>0))return;
     let d=modo==='ritmo'?(PAUSA.includes(p.andamento)?'':p.andamento==='Finalizado'?fimSem:quando[p.id]||(okD(p.prazoFim)?p.prazoFim:'')):(okD(p.prazoFim)?p.prazoFim:'');
     const atr=!!d&&d<HOJE;if(atr)d=HOJE;out.push({p,v,d,atr})});return out}
-const gastosDe=p=>fin().lanc.filter(l=>l.tipo==='s'&&l.pid===p.id);
-function custoReal(k){const ps=S.pedidos.filter(p=>p.tamanho===k&&p.andamento!=='Cancelada'&&gastosDe(p).length);if(!ps.length)return null;
+const gastosDe=p=>[...gastosLanc(p),...(copiasDe(p).length?[{cat:'Cópias Fine Art',valor:copCusto(p),cop:1}]:[])];
+const gastosLanc=p=>fin().lanc.filter(l=>l.tipo==='s'&&l.pid===p.id);
+function custoReal(k){const gastosDe=gastosLanc;const ps=S.pedidos.filter(p=>p.tamanho===k&&p.andamento!=='Cancelada'&&gastosDe(p).length);if(!ps.length)return null;
   const mat=ps.map(p=>sum(gastosDe(p).filter(l=>l.cat!=='Moldura'),l=>l.valor)),pm=ps.filter(p=>tem(p,'Moldura')),mold=pm.map(p=>sum(gastosDe(p).filter(l=>l.cat==='Moldura'),l=>l.valor));
   return {n:ps.length,mat:sum(mat)/ps.length,mold:pm.length?sum(mold)/pm.length:0,nm:pm.length}}
 function reservas(){const f=fin();if(!f.reservas){const d=HOJE.slice(0,7)+'-01';f.reservas=[{id:'imp',nome:'Impostos',pct:6,desde:d,uso:'s'},{id:'fer',nome:'Férias',pct:10,desde:d,uso:'r'}]}return f.reservas}
@@ -992,15 +1047,18 @@ function desenhaPedido(p){const W=1080,H=1350,M=84,cv=document.createElement('ca
     c.fillStyle=L;const j=pw*.2;c.fillRect(px+pw*.2,py+ph*.2,j,j);c.fillRect(px+pw*.6,py+ph*.2,j,j);c.fillStyle='#fff';c.fillRect(px+pw*.4,py+ph-j*1.4,j,j*1.4);
     c.fillStyle=T;c.font='700 30px '+D;c.textAlign='center';c.fillText(t.l,bx+bw/2,by+330+(tem(p,'Moldura')?66:54));
     c.fillStyle=G;c.font='400 24px '+X;c.fillText(String(t.w).replace('.',',')+' × '+String(t.h).replace('.',',')+' cm'+(tem(p,'Moldura')?' · com moldura':''),bx+bw/2,by+330+(tem(p,'Moldura')?100:88));c.textAlign='left'}
-  // dados, à esquerda
-  const cw=(t?bx-40:W-M)-M;let y=420;
-  const item=(r,v,g)=>{if(!v)return;c.fillStyle=G;c.font='400 25px '+X;c.fillText(r,M,y);y+=g?58:42;c.fillStyle=T;c.font=g?'800 60px '+D:'600 34px '+D;y=quebra(c,v,M,y,cw,g?62:42,g?2:4)+(g?10:22)};
-  item('Para',p.nome||'—',true);
-  item('O que',[(p.tecnicas||[]).join(' e ')||'Arte original',t?'tamanho '+t.l:'',tem(p,'Moldura')?'com moldura':''].filter(Boolean).join(', '));
-  item('Local',p.cidade);
-  if(fotoObs)item('Detalhes',p.obs);
-  item('Pedido feito em',p.contato?dd(p.contato).replace(/\/(\d\d)$/,'/20$1'):'');
-  item('Previsão de entrega',(p.prazoIni&&p.prazoFim&&p.prazoIni!==p.prazoFim?'entre '+dd(p.prazoIni).slice(0,5)+' e '+dd(p.prazoFim).replace(/\/(\d\d)$/,'/20$1'):p.prazoFim?'até '+dd(p.prazoFim).replace(/\/(\d\d)$/,'/20$1'):'a combinar')+(tem(p,'Pressa')?' · entrega expressa':''));
+  // dados, à esquerda: se não couber acima da faixa do valor, redesenha menor
+  const cw=(t?bx-40:W-M)-M,lim=H-290-24;let y=420;
+  for(const k of [1,.9,.8,.72]){c.fillStyle=P;c.fillRect(0,331,t?bx-20:W,lim-331+24);y=k<1?400:420;
+    const item=(r,v,g)=>{if(!v)return;c.fillStyle=G;c.font='400 '+Math.round(25*Math.max(k,.85))+'px '+X;c.fillText(r,M,y);y+=(g?58:42)*k;c.fillStyle=T;c.font=g?'800 '+Math.round(60*k)+'px '+D:'600 '+Math.round(34*k)+'px '+D;y=quebra(c,v,M,y,cw,(g?62:42)*k,g?2:4)+(g?10:22)*k};
+    item('Para',p.nome||'—',true);
+    item('O que',[(p.tecnicas||[]).join(' e ')||'Arte original',t?'tamanho '+t.l:'',tem(p,'Moldura')?'com moldura':''].filter(Boolean).join(', '));
+    if(copiasDe(p).length)item('Cópias Fine Art',copiasDe(p).map(x=>x.q+' × '+ctNome(x.tam)).join(', '));
+    item('Local',p.cidade);
+    if(fotoObs)item('Detalhes',p.obs);
+    item('Pedido feito em',p.contato?dd(p.contato).replace(/\/(\d\d)$/,'/20$1'):'');
+    item('Previsão de entrega',(p.prazoIni&&p.prazoFim&&p.prazoIni!==p.prazoFim?'entre '+dd(p.prazoIni).slice(0,5)+' e '+dd(p.prazoFim).replace(/\/(\d\d)$/,'/20$1'):p.prazoFim?'até '+dd(p.prazoFim).replace(/\/(\d\d)$/,'/20$1'):'a combinar')+(tem(p,'Pressa')?' · entrega expressa':''));
+    if(y<=lim)break}
   // valor
   const vy=H-290;c.fillStyle='#fff';c.fillRect(0,vy,W,206);c.fillStyle=G;c.font='400 25px '+X;c.fillText('Valor',M,vy+52);
   c.fillStyle=T;c.font='800 104px '+D;c.fillText(brl(p.valor),M,vy+158);const vw=c.measureText(brl(p.valor)).width;
@@ -2129,6 +2187,14 @@ const A={
   quita1(){$('#avq').querySelector('.btn').outerHTML='<span><b>As datas de pagamento ficam: sinal na data do pedido e restante na data da entrega.</b> <button class="btn s" data-a="quita2">Confirmar</button> <button class="btn q s" data-a="aba" data-k="fin">Cancelar</button></span>'},
   quita2(){const m=S.precos.pg=S.precos.pg||{};semQuitar().forEach(p=>{const fim=okD(p.entregue)?p.entregue:okD(p.contato)?p.contato:HOJE;
       m[p.id]=p.pago==='Sinal'?{s:okD(p.contato)?p.contato:fim,f:fim}:{f:fim};p.pago='Pago'});salvar();render()},
+  taggestao(){fechar();ui.aba='ajustes';render();setTimeout(()=>$('#tags')?.scrollIntoView({block:'start'}),50)},
+  tagver(e){ui.aba='enc';ui.ver='lista';ui.tag=e.dataset.k;ui.filtro='todas';ui.mes='';ui.busca='';render(1);scrollTo(0,0)},
+  tagarq(e){const t=e.dataset.k,A=tagsArq(),i=A.indexOf(t);i<0?A.push(t):A.splice(i,1);if(ui.tag===t&&i<0)ui.tag='';salvar();render()},
+  tagdel1(e){const n=todasTags().find(([t])=>t===e.dataset.k)?.[1]||0;e.closest('.tga').innerHTML=`<span class="muted" style="font-size:13px">tirar de ${n} ${n==1?'pedido':'pedidos'}?</span> <button class="btn p s" data-a="tagdel2" data-k="${esc(e.dataset.k)}">Apagar</button> <button class="lk" data-a="aba" data-k="ajustes">cancelar</button>`},
+  tagdel2(e){trocaTag(e.dataset.k,'');salvar();render();toast('Tag apagada')},
+  copadd(){const p=sel,k=$('#copt').value,q=Math.max(1,Math.round(+$('#copq').value||1)),v=+$('#copv').value||0,c=+copTab()[k].c||0;
+    const m=S.precos.copias=S.precos.copias||{};(m[p.id]=m[p.id]||[]).push({id:uid(),tam:k,q,v,c,data:HOJE});p.valor=(+p.valor||0)+q*v;ui.copTam=k;salvar();const y=$('#gav').scrollTop;gaveta();$('#gav').scrollTop=y},
+  copdel(e){const p=sel,m=S.precos.copias||{},L=m[p.id]||[],x=L.find(z=>z.id===e.dataset.k);if(!x)return;m[p.id]=L.filter(z=>z!==x);if(!m[p.id].length)delete m[p.id];p.valor=Math.max(0,(+p.valor||0)-x.q*x.v);salvar();const y=$('#gav').scrollTop;gaveta();$('#gav').scrollTop=y},
   gadd(){const v=+String($('#gv').value).replace(',','.');if(!(v>0)){$('#gv').focus();return}fin().lanc.push({id:uid(),tipo:'s',data:HOJE,valor:v,cat:$('#gc').value,fonte:'enc',desc:(sel.n?'nº '+sel.n+' · ':'')+sel.nome,pid:sel.id});salvar();const y=$('#gav').scrollTop;gaveta();$('#gav').scrollTop=y},
   gdel(e){const f=fin();f.lanc=f.lanc.filter(l=>l.id!==e.dataset.k);salvar();const y=$('#gav').scrollTop;gaveta();$('#gav').scrollTop=y},
   usacusto(e){const k=e.dataset.k,c=custoReal(k);if(!c)return;S.precos.custos[k].mat=Math.round(c.mat);if(c.nm)S.precos.custos[k].mold=Math.round(c.mold);salvar();render()},
@@ -2205,6 +2271,11 @@ document.addEventListener('input',ev=>{const e=ev.target,d=e.dataset;
     if('pressa' in d){S.precos.pressa=+e.value||0;salvar()}});
 document.addEventListener('toggle',e=>{if(e.target.classList?.contains('mais')){ui.finMais=e.target.open;guardaUi()}},true);
 document.addEventListener('change',ev=>{const e=ev.target;
+  if(e.dataset.tagnome!=null){const de=e.dataset.tagnome,para=e.value.trim();if(!para||para===de){e.value=de;return}if(TFIXAS.includes(para)){e.value=de;toast('Esse nome é reservado pelo sistema');return}
+    const junta=todasTags().some(([t])=>t===para);trocaTag(de,para);salvar();render();toast(junta?`“${de}” juntada com “${para}”`:'Tag renomeada');return}
+  if(e.id==='copt'){ui.copTam=e.value;$('#copv').value=copTab()[e.value].v;return}
+  if(e.dataset.cp){const[k,f]=e.dataset.cp.split('.'),T=copTab();T[k][f]=Math.max(0,+e.value||0);if(f==='c')T[k].e=0;salvar();render();return}
+  if('cpf' in e.dataset){copTab().frete=Math.max(0,+e.value||0);salvar();render();return}
   if(e.dataset.res){const[id,c]=e.dataset.res.split('.'),x=reservas().find(z=>z.id===id);if(x){x[c]=c==='pct'?Math.max(0,+e.value||0):e.value;salvar();render()}return}
   if(e.id==='fmeta'){fin().meta=+e.value||0;salvar();render();return}
   if(e.dataset.mei){fin().mei[e.dataset.mei]=+e.value||0;salvar();render();return}
