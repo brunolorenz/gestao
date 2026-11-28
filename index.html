@@ -177,10 +177,25 @@ tbody tr{cursor:pointer}tbody tr:hover{background:var(--ceu)}
 td.r,th.r{text-align:right}
 /* gaveta */
 #veu{position:fixed;inset:0;background:#0e1a4488;z-index:40;opacity:0;pointer-events:none;transition:opacity .25s}
-#gav{position:fixed;top:0;right:0;bottom:0;width:min(500px,100%);background:var(--folha);z-index:41;transform:translateX(102%);transition:transform .45s cubic-bezier(.2,.9,.2,1);overflow-y:auto;padding:22px 26px 120px}
+#gav{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--folha);z-index:41;transform:translateX(102%);transition:transform .45s cubic-bezier(.2,.9,.2,1);overflow-y:auto;padding:22px 26px 120px}
 body.g #veu{opacity:1;pointer-events:auto}body.g #gav{transform:none}
 #gav .nome{font:800 clamp(32px,4vw,46px)/1 var(--disp);font-stretch:80%;border:0;width:100%;background:none;letter-spacing:-.03em;padding:4px 0}
 .campo{display:block;margin-top:16px}
+/* ficha do pedido: seções */
+.gtop{position:sticky;top:-22px;z-index:3;margin:-22px -26px 6px;padding:14px 26px;background:var(--folha);display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--cinza);box-shadow:0 1px 0 var(--linha)}
+.gchips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+details.gs{border-top:2px solid var(--tinta);margin-top:30px}
+details.gs>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:12px;padding:14px 0 2px}
+details.gs>summary::-webkit-details-marker{display:none}
+details.gs>summary h3{font:800 23px/1 var(--disp);letter-spacing:-.025em;margin:0}
+details.gs>summary::after{content:"–";font:400 22px/1 var(--disp);color:var(--cinza);grid-column:3}
+details.gs:not([open])>summary::after{content:"+"}
+details.gs:not([open])>summary{padding-bottom:14px}
+.gsr{font-size:14px;color:var(--cinza);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+details.gs[open] .gsr{visibility:hidden}
+.gsb{padding-bottom:4px}.gsb>.campo:first-child,.gsb>.duo:first-child .campo{margin-top:10px}
+.gsb .campo{margin-top:20px}.gsb .duo .campo{margin-top:20px}
+.gfim{margin-top:44px;padding-top:14px;border-top:1px solid var(--linha)}.gfim .lk{color:var(--alizarina);font-size:14px}
 .campo>span{display:block;font-size:13px;color:var(--cinza);margin-bottom:5px}
 .campo input,.campo select,.campo textarea,.in{width:100%;padding:9px 0;border:0;border-bottom:1.5px solid var(--linha);background:none;border-radius:0;transition:border-color .15s}
 .campo input:focus,.campo textarea:focus,.campo select:focus{outline:0;border-color:var(--cobalto)}
@@ -668,13 +683,29 @@ function vEnc(){
 /* gaveta de edição: tudo salva ao digitar */
 let sel=null;
 function abrir(id){sel=S.pedidos.find(p=>p.id===id);if(!sel)return;gaveta();document.body.classList.add('g')}
-function gaveta(){const p=sel,sg=sugestao(p);
+function gaveta(){const p=sel,sg=sugestao(p),F=ui.gsF||[];
   const c=(l,f,tipo='text',ex='')=>`<label class="campo"><span>${l}</span><input type="${tipo}" data-f="${f}" value="${esc(p[f]??'')}" ${ex}></label>`;
-  $('#gav').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span class="muted">Encomenda nº ${p.n||'—'}</span><button class="btn q s" data-a="fechar">Fechar</button></div>
-  <input class="nome" data-f="nome" value="${esc(p.nome)}" placeholder="Nome do cliente" aria-label="Nome do cliente">
-  <div class="campo"><span>Andamento</span><div>${TODAS.map(e=>`<button class="tog" data-a="set" data-f="andamento" data-k="${e}" aria-pressed="${p.andamento===e}">${e}</button>`).join('')}</div></div>
+  // cada seção abre e fecha; o resumo só aparece quando ela está fechada
+  const sec=(id,tit,res,corpo)=>`<details class="gs" data-gs="${id}" ${F.includes(id)?'':'open'}><summary><h3>${tit}</h3><span class="gsr">${res}</span></summary><div class="gsb">${corpo}</div></details>`;
+  const ev=envDe(p)||{},cert=(S.precos.certs||{})[p.id];
+  $('#gav').innerHTML=`<div class="gtop"><span>Encomenda nº ${p.n||'—'}</span><button class="btn q s" data-a="fechar">Fechar</button></div>
+  <input class="nome" data-f="nome" value="${esc(p.nome)}" placeholder="Nome do cliente" aria-label="Nome do cliente" ${(n=>n>30?'style="font-size:clamp(21px,5.6vw,27px)"':n>18?'style="font-size:clamp(24px,6.6vw,34px)"':'')((p.nome||'').length)}>
+  <div class="gchips">${chipU(p)}<span class="chip">${esc(p.andamento||'')}</span>${p.andamento==='Entregue'?`<span class="chip v">${dd(p.entregue)||'entregue'}</span>`:chipPrazo(p)}${chipPago(p)}</div>
+  ${sec('and','Andamento e prazos',esc(p.andamento||''),`
+  <div class="campo"><div>${TODAS.map(e=>`<button class="tog" data-a="set" data-f="andamento" data-k="${e}" aria-pressed="${p.andamento===e}">${e}</button>`).join('')}</div></div>
+  <div class="duo">${c('Prazo: começo','prazoIni','date')}${c('Prazo: fim','prazoFim','date')}</div>
+  <div class="duo">${c('Contato','contato','date')}${c('Entregue em','entregue','date')}</div>`)}
+  ${sec('obra','A obra',[TAM[p.tamanho]?.l,(p.tecnicas||[]).join(', ')].filter(Boolean).map(esc).join(' · '),`
   <div class="campo"><span>Tamanho</span><div>${Object.keys(TAM).map(k=>`<button class="tog" data-a="set" data-f="tamanho" data-k="${k}" aria-pressed="${p.tamanho===k}">${TAM[k].l}</button>`).join('')}</div></div>
   <div class="campo"><span>Técnica e extras</span><div>${TEC.map(t=>`<button class="tog" data-a="alt" data-f="tecnicas" data-k="${t}" aria-pressed="${(p.tecnicas||[]).includes(t)}">${t}</button>`).join('')}${['Moldura','Pressa'].map(t=>`<button class="tog" data-a="alt" data-f="tags" data-k="${t}" aria-pressed="${tem(p,t)}">${t}</button>`).join('')}</div></div>
+  <div class="campo"><span>Tags</span><div>${[...new Set([...todasTags().map(x=>x[0]).filter(t=>!arq(t)),...(p.tags||[])])].filter(t=>t!=='Moldura'&&t!=='Pressa').map(t=>`<button class="tog" data-a="alt" data-f="tags" data-k="${esc(t)}" aria-pressed="${tem(p,t)}">${esc(t)}</button>`).join('')}</div>
+    <button class="lk" style="font-size:13px;margin:2px 0 4px" data-a="taggestao">organizar tags</button>
+    <input id="novatag" placeholder="Nova tag: escreva e aperte Enter" aria-label="Criar tag nova" enterkeyhint="done"></div>
+  ${c('Cidade do predinho','cidade')}
+  <label class="campo"><span>Observações</span><textarea data-f="obs">${esc(p.obs)}</textarea></label>
+  <div class="campo"><span>Foto da obra</span><div class="barra" style="margin:0">${fotoDe(p)?`<img src="${fotoDe(p)}" alt="Foto da obra" style="height:84px;box-shadow:0 0 0 1px var(--linha)">`:''}<label class="btn q s" style="cursor:pointer">${fotoDe(p)?'Trocar':'Adicionar foto'}<input type="file" class="pfoto" accept="image/*" hidden></label>${fotoDe(p)?'<button class="lk" data-a="fotodel">remover</button>':''}</div></div>
+`)}
+  ${sec('din','Dinheiro',brl(+p.valor||0)+(falta(p)?' · falta '+brl(falta(p)):p.pago==='Pago'?' · pago':''),`
   <div class="duo"><label class="campo"><span>Valor (R$)</span><input type="number" inputmode="decimal" data-f="valor" value="${p.valor||''}"></label>
     <div class="campo"><span>Pagamento</span><div>${['Sinal','Pago','Não'].map(e=>`<button class="tog" data-a="set" data-f="pago" data-k="${e}" aria-pressed="${p.pago===e}">${e==='Não'?'Não pago':e}</button>`).join('')}</div></div></div>
   ${sg&&sg!==p.valor?`<button class="btn q s" style="margin-top:8px" data-a="usar" data-k="${sg}">Pela tabela: ${brl(sg)} · usar</button>`:''}
@@ -683,24 +714,20 @@ function gaveta(){const p=sel,sg=sugestao(p);
     return `<div class="duo">${p.pago==='Sinal'||r.s?`<label class="campo"><span>Sinal de ${brl2(v/2)} recebido em</span><input type="date" data-pg="s" value="${r.s||''}"></label>`:''}${p.pago==='Pago'?`<label class="campo"><span>${r.s?`Restante de ${brl2(v/2)} recebido em`:`Total de ${brl2(v)} recebido em`}</span><input type="date" data-pg="f" value="${r.f||''}"></label>`:''}</div>
     <p class="muted pgres">${pgRes(p)}</p>`})((S.precos.pg||{})[p.id]||{})}
   <label class="campo"><span>Forma de pagamento</span><select data-f="pgto">${['','Pix','Cartão','Contrato'].map(o=>`<option ${p.pgto===o?'selected':''}>${o}</option>`).join('')}</select></label>
-  ${c('Cidade do predinho','cidade')}
-  <label class="campo"><span>Observações</span><textarea data-f="obs">${esc(p.obs)}</textarea></label>
-  <div class="duo">${c('Contato','contato','date')}${c('Entregue em','entregue','date')}</div>
-  <div class="duo">${c('Prazo: começo','prazoIni','date')}${c('Prazo: fim','prazoFim','date')}</div>
-  ${blocoEnvio(p)}
-  <div class="campo"><span>Tags</span><div>${[...new Set([...todasTags().map(x=>x[0]).filter(t=>!arq(t)),...(p.tags||[])])].filter(t=>t!=='Moldura'&&t!=='Pressa').map(t=>`<button class="tog" data-a="alt" data-f="tags" data-k="${esc(t)}" aria-pressed="${tem(p,t)}">${esc(t)}</button>`).join('')}</div>
-    <button class="lk" style="font-size:13px;margin:2px 0 4px" data-a="taggestao">organizar tags</button>
-    <input id="novatag" placeholder="Criar tag nova e apertar Enter" aria-label="Criar tag nova" enterkeyhint="done"></div>
   ${blocoCopias(p)}
   <div class="campo"><span>Gastos desta encomenda</span>${(g=>`${g.map(l=>`<div class="gl"><span>${esc(l.cat)}${l.desc&&!l.desc.startsWith('nº ')?' · '+esc(l.desc):''}</span><b>${brl2(l.valor)}</b>${l.cop?'<span class="muted" style="font-size:13px">das cópias</span>':`<button class="lk" data-a="gdel" data-k="${l.id}">apagar</button>`}</div>`).join('')}
     <div class="pe" style="margin-top:6px"><input type="number" id="gv" min="0" step="0.01" placeholder="R$" style="width:90px"><select id="gc" style="padding:6px 0;border:0;border-bottom:1.5px solid var(--linha);background:none">${['Material','Moldura','Frete e correio','Impressão','Outros'].map(c=>`<option>${c}</option>`).join('')}</select><button class="btn q s" data-a="gadd">Adicionar</button></div>
     ${g.length?`<p class="muted" style="font-size:13.5px;margin:6px 0 0">Lucro desta encomenda: <b style="color:var(--tinta)">${brl2((+p.valor||0)-sum(g,l=>l.valor))}</b>${+p.valor?` (${Math.round(((+p.valor||0)-sum(g,l=>l.valor))/(+p.valor)*100)}% do valor)`:''}.</p>`:''}`)(gastosDe(p))}</div>
-  <div class="campo"><span>Foto da obra</span><div class="barra" style="margin:0">${fotoDe(p)?`<img src="${fotoDe(p)}" alt="Foto da obra" style="height:84px;box-shadow:0 0 0 1px var(--linha)">`:''}<label class="btn q s" style="cursor:pointer">${fotoDe(p)?'Trocar':'Adicionar foto'}<input type="file" class="pfoto" accept="image/*" hidden></label>${fotoDe(p)?'<button class="lk" data-a="fotodel">remover</button>':''}</div></div>
+`)}
+  ${sec('tempo','Tempo',tempoDe(p)?fmtH(tempoDe(p)):'sem registro',`
   <div class="campo"><span>Horas de trabalho nesta obra</span><div class="cronl"><b class="num" data-cron="${p.id}">${p.cron?fmtCron(p):fmtH(tempoDe(p))}</b><button class="btn ${p.cron?'p':''} s" data-a="cron" data-id="${p.id}">${p.cron?'Parar':'Iniciar cronômetro'}</button></div>
-    ${p.cron?'':`<label class="muted" style="display:flex;align-items:center;gap:8px;font-size:13px;margin-top:6px">ou digite o total em horas <input type="number" step="0.25" min="0" inputmode="decimal" data-f="horas" value="${p.horas||''}" placeholder="0" style="width:90px"></label>`}
+    ${p.cron?'':`<label class="muted" style="display:flex;align-items:center;gap:8px;font-size:13px;margin-top:6px">ou digite o total em horas <input type="number" step="any" min="0" inputmode="decimal" data-f="horas" value="${p.horas||''}" placeholder="0" style="width:90px"></label>`}
     ${(a=>a?`<p class="muted" style="font-size:13.5px;margin:6px 0 0">Mais ${fmtMin(a*60)} de acabamento (certificado, embalagem${tem(p,'Moldura')?', moldura':''}${nCop(p)?', '+nCop(p)+(nCop(p)==1?' cópia':' cópias'):''} e envio)${tempoDe(p)?`: <b style="color:var(--tinta)">${fmtH(tempoDe(p)+a)}</b> no total`:''}.</p>`:'')(acabH(p))}</div>
-  <div class="barra" style="margin:28px 0 0"><button class="btn" data-a="foto">Gerar imagem do pedido</button><button class="btn q" data-a="cert">${(S.precos.certs||{})[p.id]?'Abrir certificado':'Gerar certificado'}</button></div>
-  <div style="margin-top:14px" id="apagar"><button class="btn q s" data-a="apagar1">Apagar encomenda</button></div>`}
+`)}
+  ${sec('ent','Entrega',[endDe(p)?'endereço recebido':ev.t?'esperando o endereço':'sem endereço',cert?'certificado gerado':''].filter(Boolean).join(' · '),`
+  ${blocoEnvio(p)}
+  <div class="barra" style="margin:22px 0 0"><button class="btn" data-a="foto">Gerar imagem do pedido</button><button class="btn q" data-a="cert">${(S.precos.certs||{})[p.id]?'Abrir certificado':'Gerar certificado'}</button></div>`)}
+  <div class="gfim" id="apagar"><button class="lk" data-a="apagar1">Apagar encomenda</button></div>`}
 function campo(el){const p=sel,f=el.dataset.f;if(!p||!f)return;
   if(f==='valor'||f==='n'||f==='horas')p[f]=+String(el.value).replace(',','.')||0;
   else if(f==='tagsLivres')p.tags=[...(p.tags||[]).filter(t=>t==='Moldura'||t==='Pressa'),...el.value.split(',').map(s=>s.trim()).filter(Boolean)];
@@ -2528,6 +2555,7 @@ document.addEventListener('input',ev=>{const e=ev.target,d=e.dataset;
   if(e.id==='reaj'){ui.reaj=+e.value;dPrecos();guardaUi();return}
     if('pressa' in d){S.precos.pressa=+e.value||0;salvar()}});
 document.addEventListener('toggle',e=>{if(e.target.classList?.contains('mais')){ui.finMais=e.target.open;guardaUi()}},true);
+document.addEventListener('toggle',e=>{const g=e.target.dataset?.gs;if(!g)return;const F=new Set(ui.gsF||[]);e.target.open?F.delete(g):F.add(g);ui.gsF=[...F];guardaUi()},true);
 document.addEventListener('change',ev=>{const e=ev.target;
   if(e.dataset.tagnome!=null){const de=e.dataset.tagnome,para=e.value.trim();if(!para||para===de){e.value=de;return}if(TFIXAS.includes(para)){e.value=de;toast('Esse nome é reservado pelo sistema');return}
     const junta=todasTags().some(([t])=>t===para);trocaTag(de,para);salvar();render();toast(junta?`“${de}” juntada com “${para}”`:'Tag renomeada');return}
