@@ -195,6 +195,14 @@ details.gs:not([open])>summary{padding-bottom:14px}
 details.gs[open] .gsr{visibility:hidden}
 .gsb{padding-bottom:4px}.gsb>.campo:first-child,.gsb>.duo:first-child .campo{margin-top:10px}
 .gsb .campo{margin-top:20px}.gsb .duo .campo{margin-top:20px}
+.gcols{display:block}
+@media(min-width:1100px){
+  #gav{width:min(1180px,calc(100vw - 96px));padding:22px 48px 80px}
+  .gtop{margin:-22px -48px 8px;padding:14px 48px}
+  #gav .nome{font-size:clamp(40px,3.6vw,58px)!important}
+  .gcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 56px;align-items:start}
+  .gcol>details.gs:first-child{margin-top:22px}
+}
 .gfim{margin-top:44px;padding-top:14px;border-top:1px solid var(--linha)}.gfim .lk{color:var(--alizarina);font-size:14px}
 .campo>span{display:block;font-size:13px;color:var(--cinza);margin-bottom:5px}
 .campo input,.campo select,.campo textarea,.in{width:100%;padding:9px 0;border:0;border-bottom:1.5px solid var(--linha);background:none;border-radius:0;transition:border-color .15s}
@@ -340,6 +348,25 @@ body:not([data-aba=fin]) #fab{display:none}
 #fab:hover{transform:translateY(-2px);background:var(--tinta)}
 body[data-aba=porta] #fab,body.g #fab,body.certon #fab,body.kmf #fab,body.lancon #fab,body.menuon #fab{display:none}
 @media(max-width:560px){#fab{height:58px;width:58px;padding:0;justify-content:center}#fab em{display:none}}
+/* cópias e gastos na ficha */
+.cx2{background:var(--papel);padding:14px 16px 16px;margin-top:2px}
+.cxl{margin:-4px 0 12px}
+.cxr{display:grid;grid-template-columns:auto 1fr auto 28px;gap:10px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--linha);font-size:15px}
+.cxr .muted{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cxx{width:28px;height:28px;font-size:20px;line-height:1;color:var(--cinza);align-self:center}.cxx:hover{color:var(--alizarina)}
+.cxadd{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:12px}
+.stp{display:flex;align-items:center;background:var(--folha);box-shadow:inset 0 0 0 1px var(--linha)}
+.stp button{width:36px;height:38px;font-size:18px;color:var(--tinta)}.stp button:hover{background:var(--ceu)}
+.stp input{width:44px;height:38px;border:0;text-align:center;background:none;font:700 16px var(--disp);-moz-appearance:textfield}
+.stp input::-webkit-inner-spin-button,.rs input::-webkit-inner-spin-button{-webkit-appearance:none}
+.rs{display:flex;align-items:center;gap:6px;height:38px;padding:0 10px;background:var(--folha);box-shadow:inset 0 0 0 1px var(--linha);font-size:14px;color:var(--cinza)}
+.rs input{width:76px;border:0;background:none;font:700 16px var(--disp);color:var(--tinta);text-align:right;-moz-appearance:textfield}
+.rs:focus-within,.stp:focus-within{box-shadow:inset 0 0 0 1.5px var(--cobalto)}.rs input:focus,.stp input:focus{outline:0}
+.cxadd .btn{height:38px}
+.cxres{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px;padding-top:12px;border-top:1.5px solid var(--tinta)}
+.cxres span{display:block;font-size:12.5px;color:var(--cinza)}.cxres b{font:800 20px var(--disp);letter-spacing:-.02em}.cxres em{display:block;font-style:normal;font-size:12.5px;color:var(--cinza)}
+.cxn{font-size:13px;color:var(--cinza);margin:10px 0 0}
+.chip.t{background:var(--cobalto);color:#fff;font-weight:700}
 /* conferência */
 .conf{margin-top:18px}details.mais.conf>summary{font-size:clamp(18px,1.9vw,24px);padding:16px 0}details.mais.conf>summary::before{display:none}.conf summary{display:flex;flex-direction:column;gap:2px}.conf summary .muted{font-size:14px;font-weight:400}
 .confi{padding:14px 0;border-top:1px solid var(--linha)}.confi p{margin:4px 0 8px;font-size:14.5px;max-width:70ch}.confex{font-size:13.5px;color:var(--tinta);background:var(--folha);padding:8px 10px;box-shadow:0 0 0 1px var(--linha)}
@@ -690,7 +717,8 @@ function gaveta(){const p=sel,sg=sugestao(p),F=ui.gsF||[];
   const ev=envDe(p)||{},cert=(S.precos.certs||{})[p.id];
   $('#gav').innerHTML=`<div class="gtop"><span>Encomenda nº ${p.n||'—'}</span><button class="btn q s" data-a="fechar">Fechar</button></div>
   <input class="nome" data-f="nome" value="${esc(p.nome)}" placeholder="Nome do cliente" aria-label="Nome do cliente" ${(n=>n>30?'style="font-size:clamp(21px,5.6vw,27px)"':n>18?'style="font-size:clamp(24px,6.6vw,34px)"':'')((p.nome||'').length)}>
-  <div class="gchips">${chipU(p)}<span class="chip">${esc(p.andamento||'')}</span>${p.andamento==='Entregue'?`<span class="chip v">${dd(p.entregue)||'entregue'}</span>`:chipPrazo(p)}${chipPago(p)}</div>
+  <div class="gchips">${TAM[p.tamanho]?`<span class="chip t">${TAM[p.tamanho].l}${tem(p,'Moldura')?' com moldura':''}</span>`:''}${chipU(p)}<span class="chip">${esc(p.andamento||'')}</span>${p.andamento==='Entregue'?`<span class="chip v">${dd(p.entregue)||'entregue'}</span>`:chipPrazo(p)}${chipPago(p)}</div>
+  <div class="gcols"><div class="gcol">
   ${sec('and','Andamento e prazos',esc(p.andamento||''),`
   <div class="campo"><div>${TODAS.map(e=>`<button class="tog" data-a="set" data-f="andamento" data-k="${e}" aria-pressed="${p.andamento===e}">${e}</button>`).join('')}</div></div>
   <div class="duo">${c('Prazo: começo','prazoIni','date')}${c('Prazo: fim','prazoFim','date')}</div>
@@ -705,6 +733,7 @@ function gaveta(){const p=sel,sg=sugestao(p),F=ui.gsF||[];
   <label class="campo"><span>Observações</span><textarea data-f="obs">${esc(p.obs)}</textarea></label>
   <div class="campo"><span>Foto da obra</span><div class="barra" style="margin:0">${fotoDe(p)?`<img src="${fotoDe(p)}" alt="Foto da obra" style="height:84px;box-shadow:0 0 0 1px var(--linha)">`:''}<label class="btn q s" style="cursor:pointer">${fotoDe(p)?'Trocar':'Adicionar foto'}<input type="file" class="pfoto" accept="image/*" hidden></label>${fotoDe(p)?'<button class="lk" data-a="fotodel">remover</button>':''}</div></div>
 `)}
+  </div><div class="gcol">
   ${sec('din','Dinheiro',brl(+p.valor||0)+(falta(p)?' · falta '+brl(falta(p)):p.pago==='Pago'?' · pago':''),`
   <div class="duo"><label class="campo"><span>Valor (R$)</span><input type="number" inputmode="decimal" data-f="valor" value="${p.valor||''}"></label>
     <div class="campo"><span>Pagamento</span><div>${['Sinal','Pago','Não'].map(e=>`<button class="tog" data-a="set" data-f="pago" data-k="${e}" aria-pressed="${p.pago===e}">${e==='Não'?'Não pago':e}</button>`).join('')}</div></div></div>
@@ -715,9 +744,7 @@ function gaveta(){const p=sel,sg=sugestao(p),F=ui.gsF||[];
     <p class="muted pgres">${pgRes(p)}</p>`})((S.precos.pg||{})[p.id]||{})}
   <label class="campo"><span>Forma de pagamento</span><select data-f="pgto">${['','Pix','Cartão','Contrato'].map(o=>`<option ${p.pgto===o?'selected':''}>${o}</option>`).join('')}</select></label>
   ${blocoCopias(p)}
-  <div class="campo"><span>Gastos desta encomenda</span>${(g=>`${g.map(l=>`<div class="gl"><span>${esc(l.cat)}${l.desc&&!l.desc.startsWith('nº ')?' · '+esc(l.desc):''}</span><b>${brl2(l.valor)}</b>${l.cop?'<span class="muted" style="font-size:13px">das cópias</span>':`<button class="lk" data-a="gdel" data-k="${l.id}">apagar</button>`}</div>`).join('')}
-    <div class="pe" style="margin-top:6px"><input type="number" id="gv" min="0" step="0.01" placeholder="R$" style="width:90px"><select id="gc" style="padding:6px 0;border:0;border-bottom:1.5px solid var(--linha);background:none">${['Material','Moldura','Frete e correio','Impressão','Outros'].map(c=>`<option>${c}</option>`).join('')}</select><button class="btn q s" data-a="gadd">Adicionar</button></div>
-    ${g.length?`<p class="muted" style="font-size:13.5px;margin:6px 0 0">Lucro desta encomenda: <b style="color:var(--tinta)">${brl2((+p.valor||0)-sum(g,l=>l.valor))}</b>${+p.valor?` (${Math.round(((+p.valor||0)-sum(g,l=>l.valor))/(+p.valor)*100)}% do valor)`:''}.</p>`:''}`)(gastosDe(p))}</div>
+  ${blocoGastos(p)}
 `)}
   ${sec('tempo','Tempo',tempoDe(p)?fmtH(tempoDe(p)):'sem registro',`
   <div class="campo"><span>Horas de trabalho nesta obra</span><div class="cronl"><b class="num" data-cron="${p.id}">${p.cron?fmtCron(p):fmtH(tempoDe(p))}</b><button class="btn ${p.cron?'p':''} s" data-a="cron" data-id="${p.id}">${p.cron?'Parar':'Iniciar cronômetro'}</button></div>
@@ -727,6 +754,7 @@ function gaveta(){const p=sel,sg=sugestao(p),F=ui.gsF||[];
   ${sec('ent','Entrega',[endDe(p)?'endereço recebido':ev.t?'esperando o endereço':'sem endereço',cert?'certificado gerado':''].filter(Boolean).join(' · '),`
   ${blocoEnvio(p)}
   <div class="barra" style="margin:22px 0 0"><button class="btn" data-a="foto">Gerar imagem do pedido</button><button class="btn q" data-a="cert">${(S.precos.certs||{})[p.id]?'Abrir certificado':'Gerar certificado'}</button></div>`)}
+  </div></div>
   <div class="gfim" id="apagar"><button class="lk" data-a="apagar1">Apagar encomenda</button></div>`}
 function campo(el){const p=sel,f=el.dataset.f;if(!p||!f)return;
   if(f==='valor'||f==='n'||f==='horas')p[f]=+String(el.value).replace(',','.')||0;
@@ -1072,12 +1100,26 @@ const copiasDe=p=>((S.precos.copias||{})[p.id]||[]);
 const nCop=p=>sum(copiasDe(p),x=>+x.q||0);
 const copTotal=p=>sum(copiasDe(p),x=>(+x.q||0)*(+x.v||0));
 const copCusto=p=>sum(copiasDe(p),x=>(+x.q||0)*(+x.c||0))+(copiasDe(p).length?+copTab().frete||0:0);
-function blocoCopias(p){const L=copiasDe(p),T=copTab(),k0=ui.copTam||(p.tamanho&&T[p.tamanho]?p.tamanho:'A4');
-  return `<div class="campo"><span>Cópias Fine Art</span>
-    ${L.map(x=>`<div class="gl"><span><b style="font-size:15px">${x.q} × ${ctNome(x.tam)}</b> <span class="muted">${brl(x.v)} cada · custo ${brl(x.c)} cada</span></span><b>${brl(x.q*x.v)}</b><button class="lk" data-a="copdel" data-k="${x.id}">remover</button></div>`).join('')}
-    <div class="pe" style="margin-top:8px"><select id="copt" aria-label="Tamanho da cópia" style="padding:6px 0;border:0;border-bottom:1.5px solid var(--linha);background:none">${CTAM.map(([k,l])=>`<option value="${k}" ${k===k0?'selected':''}>${l}</option>`).join('')}</select>
-      <label>qtd <input type="number" id="copq" min="1" step="1" value="1" style="width:56px"></label><label>R$ cada <input type="number" id="copv" min="0" step="1" value="${T[k0].v}" style="width:80px"></label><button class="btn q s" data-a="copadd">Adicionar</button></div>
-    ${L.length?`<p class="muted" style="font-size:13.5px;margin:6px 0 0">${nCop(p)} ${nCop(p)==1?'cópia':'cópias'}: ${brl(copTotal(p))} para o cliente, já somados ao valor do pedido. Custo com o fornecedor: ${brl(copCusto(p))}${+T.frete?' (com frete)':''}. Sobram ${brl(copTotal(p)-copCusto(p))}.</p>`:'<p class="muted" style="font-size:13px;margin:6px 0 0">O preço de cada cópia vem da tabela em Preços e entra no valor do pedido; o custo do fornecedor entra sozinho no Financeiro.</p>'}</div>`}
+function blocoCopias(p){const L=copiasDe(p),T=copTab(),k0=ui.copTam&&T[ui.copTam]?ui.copTam:(p.tamanho&&T[p.tamanho]?p.tamanho:'A4');
+  return `<div class="campo"><span>Cópias Fine Art</span><div class="cx2">
+    ${L.length?`<div class="cxl">${L.map(x=>`<div class="cxr"><b>${x.q} × ${ctNome(x.tam)}</b><span class="muted">${brl(x.v)} cada</span><b class="num">${brl(x.q*x.v)}</b><button class="cxx" data-a="copdel" data-k="${x.id}" aria-label="Remover ${x.q} × ${ctNome(x.tam)}">×</button></div>`).join('')}</div>`:''}
+    <div class="tgs" role="group" aria-label="Tamanho da cópia">${CTAM.map(([k,l])=>`<button class="tg" data-a="coptam" data-k="${k}" aria-pressed="${k===k0}">${l}</button>`).join('')}</div>
+    <input type="hidden" id="copt" value="${k0}">
+    <div class="cxadd"><div class="stp"><button data-a="copq" data-k="-1" aria-label="Uma a menos">−</button><input id="copq" type="number" min="1" step="1" value="1" inputmode="numeric" aria-label="Quantidade"><button data-a="copq" data-k="1" aria-label="Uma a mais">+</button></div>
+      <label class="rs">R$<input id="copv" type="number" min="0" step="1" inputmode="decimal" value="${T[k0].v}" aria-label="Preço de cada cópia">cada</label>
+      <button class="btn s" data-a="copadd" id="copbt">${copRot(1,k0)}</button></div>
+    ${L.length?`<div class="cxres"><div><span>Cliente paga</span><b>${brl(copTotal(p))}</b></div><div><span>Fornecedor${+T.frete?', com frete':''}</span><b>${brl(copCusto(p))}</b></div><div><span>Sobra</span><b>${brl(copTotal(p)-copCusto(p))}</b></div></div>
+      <p class="cxn">O valor das cópias já está somado ao valor do pedido.</p>`:`<p class="cxn">O preço vem da tabela de Preços e é somado ao valor do pedido. O custo do fornecedor entra sozinho no Financeiro.</p>`}</div></div>`}
+const GCATS=['Material','Moldura','Frete e correio','Impressão','Outros'];
+function blocoGastos(p){const g=gastosDe(p),cat=GCATS.includes(ui.gCat)?ui.gCat:'Material',tot=sum(g,l=>l.valor),v=+p.valor||0;
+  return `<div class="campo"><span>Gastos desta encomenda</span><div class="cx2">
+    ${g.length?`<div class="cxl">${g.map(l=>`<div class="cxr"><b>${esc(l.cat)}</b><span class="muted">${l.cop?'automático, das cópias':l.desc&&!l.desc.startsWith('nº ')?esc(l.desc):l.data?dd(l.data):''}</span><b class="num">${brl2(l.valor)}</b>${l.cop?'<span></span>':`<button class="cxx" data-a="gdel" data-k="${l.id}" aria-label="Apagar gasto de ${esc(l.cat)}">×</button>`}</div>`).join('')}</div>`:''}
+    <div class="tgs" role="group" aria-label="Tipo de gasto">${GCATS.map(c=>`<button class="tg" data-a="gcat" data-k="${c}" aria-pressed="${c===cat}">${c}</button>`).join('')}</div>
+    <input type="hidden" id="gc" value="${cat}">
+    <div class="cxadd"><label class="rs">R$<input id="gv" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00" aria-label="Valor do gasto"></label><button class="btn s" data-a="gadd">Adicionar gasto</button></div>
+    ${g.length?`<div class="cxres"><div><span>Valor do pedido</span><b>${brl(v)}</b></div><div><span>Gastos</span><b>${brl(tot)}</b></div><div><span>Lucro</span><b>${brl(v-tot)}</b>${v?`<em>${Math.round((v-tot)/v*100)}% do valor</em>`:''}</div></div>`:'<p class="cxn">Ligue aqui o que você gastou só com esta obra: material, moldura, frete. Entra no Financeiro e no lucro por encomenda.</p>'}</div></div>`}
+const copRot=(q,k)=>`Adicionar ${q} ${q==1?'cópia':'cópias'} ${ctNome(k)}`;
+function pintaCopBt(){const b=$('#copbt');if(b)b.textContent=copRot(Math.max(1,Math.round(+$('#copq').value||1)),$('#copt').value)}
 function vCopiasPrecos(){const T=copTab(),mx=Math.max(...CTAM.map(([k])=>+T[k].v||0),1);
   return `<section class="ed"><div><h2>Cópias Fine Art</h2><p class="sub">Quanto você cobra por cópia e quanto o fornecedor cobra para imprimir. Hahnemühle Photo Rag 308 g, 100% algodão. A barra escura é o custo.</p>
       <label class="pe">Frete do fornecedor por pedido (R$) <input type="number" min="0" step="1" data-cpf value="${T.frete||''}" placeholder="0" style="width:80px"></label></div>
@@ -2457,6 +2499,9 @@ const A={
   tagarq(e){const t=e.dataset.k,A=tagsArq(),i=A.indexOf(t);i<0?A.push(t):A.splice(i,1);if(ui.tag===t&&i<0)ui.tag='';salvar();render()},
   tagdel1(e){const n=todasTags().find(([t])=>t===e.dataset.k)?.[1]||0;e.closest('.tga').innerHTML=`<span class="muted" style="font-size:13px">tirar de ${n} ${n==1?'pedido':'pedidos'}?</span> <button class="btn p s" data-a="tagdel2" data-k="${esc(e.dataset.k)}">Apagar</button> <button class="lk" data-a="aba" data-k="ajustes">cancelar</button>`},
   tagdel2(e){trocaTag(e.dataset.k,'');salvar();render();toast('Tag apagada')},
+  coptam(e){const k=e.dataset.k;ui.copTam=k;$('#copt').value=k;$('#copv').value=copTab()[k].v;e.parentNode.querySelectorAll('.tg').forEach(b=>b.setAttribute('aria-pressed',String(b===e)));pintaCopBt()},
+  copq(e){const i=$('#copq');i.value=Math.max(1,Math.round(+i.value||1)+(+e.dataset.k));pintaCopBt()},
+  gcat(e){ui.gCat=e.dataset.k;$('#gc').value=e.dataset.k;e.parentNode.querySelectorAll('.tg').forEach(b=>b.setAttribute('aria-pressed',String(b===e)));$('#gv')?.focus()},
   copadd(){const p=sel,k=$('#copt').value,q=Math.max(1,Math.round(+$('#copq').value||1)),v=+$('#copv').value||0,c=+copTab()[k].c||0;
     const m=S.precos.copias=S.precos.copias||{};(m[p.id]=m[p.id]||[]).push({id:uid(),tam:k,q,v,c,data:HOJE});p.valor=(+p.valor||0)+q*v;ui.copTam=k;salvar();const y=$('#gav').scrollTop;gaveta();$('#gav').scrollTop=y},
   copdel(e){const p=sel,m=S.precos.copias||{},L=m[p.id]||[],x=L.find(z=>z.id===e.dataset.k);if(!x)return;m[p.id]=L.filter(z=>z!==x);if(!m[p.id].length)delete m[p.id];p.valor=Math.max(0,(+p.valor||0)-x.q*x.v);salvar();const y=$('#gav').scrollTop;gaveta();$('#gav').scrollTop=y},
@@ -2559,7 +2604,7 @@ document.addEventListener('toggle',e=>{const g=e.target.dataset?.gs;if(!g)return
 document.addEventListener('change',ev=>{const e=ev.target;
   if(e.dataset.tagnome!=null){const de=e.dataset.tagnome,para=e.value.trim();if(!para||para===de){e.value=de;return}if(TFIXAS.includes(para)){e.value=de;toast('Esse nome é reservado pelo sistema');return}
     const junta=todasTags().some(([t])=>t===para);trocaTag(de,para);salvar();render();toast(junta?`“${de}” juntada com “${para}”`:'Tag renomeada');return}
-  if(e.id==='copt'){ui.copTam=e.value;$('#copv').value=copTab()[e.value].v;return}
+  if(e.id==='copq'){pintaCopBt();return}
   if(e.dataset.cp){const[k,f]=e.dataset.cp.split('.'),T=copTab();T[k][f]=Math.max(0,+e.value||0);if(f==='c')T[k].e=0;salvar();render();return}
   if('cpf' in e.dataset){copTab().frete=Math.max(0,+e.value||0);salvar();render();return}
   if(e.dataset.res){const[id,c]=e.dataset.res.split('.'),x=reservas().find(z=>z.id===id);if(x){x[c]=c==='pct'?Math.max(0,+e.value||0):e.value;salvar();render()}return}
@@ -2574,6 +2619,7 @@ document.addEventListener('change',ev=>{const e=ev.target;
   if(e.id==='imp'&&e.files[0]){const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!Array.isArray(j.pedidos))throw 0;S=Object.assign(PADRAO(),{precos:S.precos,feira:S.feira},j);completa();forcar=true;salvar();ui.aba='geral';render()}catch(x){$('#impm').textContent='Esse arquivo não tem o formato do sistema. Use o JSON de cópia completa ou o encomendas-notion.json.'}};r.readAsText(e.files[0])}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#lanc')){fechaLanc();return}if(e.key==='Escape'&&$('#etq')){fechaEtq();return}if(e.key==='Escape'&&$('#menu')){fechaMenu();$('#menub').focus();return}
   if(e.key==='Enter'&&$('#lanc')&&e.target.closest?.('#lanc')&&e.target.tagName==='INPUT'&&e.target.type!=='checkbox'){e.preventDefault();A.finadd();return}if(e.key==='Escape'&&$('#cert')){A.certfecha();return}if(e.key==='Escape'&&$('#foto')){$('#foto').remove();return}if(e.key==='Escape'&&document.body.classList.contains('g'))fechar();
+  if(e.key==='Enter'&&e.target.id==='gv'&&sel){e.preventDefault();A.gadd();return}if(e.key==='Enter'&&(e.target.id==='copq'||e.target.id==='copv')&&sel){e.preventDefault();A.copadd();return}
   if(e.key==='Enter'&&e.target.id==='novatag'&&sel){const t=e.target.value.trim();if(t){sel.tags=sel.tags||[];if(!tem(sel,t))sel.tags.push(t);salvar();gaveta();$('#novatag').focus()}}});
 /* arrastar cartões no quadro */
 let arr=null;
